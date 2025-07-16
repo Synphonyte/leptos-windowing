@@ -5,7 +5,7 @@ use leptos_windowing::{
     pagination::{
         Loading, PaginatedFor, PaginationNext, PaginationPages, PaginationPrev, PaginationState,
     },
-    MemoryLoader, SortMode,
+    MemoryLoader,
 };
 use leptos_windowing_examples::data::{Book, BOOKS};
 
@@ -22,10 +22,10 @@ pub fn App() -> impl IntoView {
 
     view! {
         <ul class="m-10 text-sm rounded-md border dark:border-gray-700 overflow-clip">
-            <PaginatedFor loader=BookLoader state item_count_per_page=5 let:book>
+            <PaginatedFor loader=BookLoader query=() state item_count_per_page=5 let:idx_book>
                 <li class="p-2 border-b dark:border-gray-700">
-                    <h3 class="font-bold">{book.1.title}</h3>
-                    <p class="text-gray-500 dark:text-gray-400">{book.1.author}</p>
+                    <h3 class="font-bold">{idx_book.1.title}</h3>
+                    <p class="text-gray-500 dark:text-gray-400">{idx_book.1.author}</p>
                 </li>
 
                 <Loading slot>
@@ -74,13 +74,13 @@ pub struct BookLoader;
 
 impl MemoryLoader for BookLoader {
     type Item = Book;
+    type Query = ();
 
-    // We're going to ignore sorting for this simple example.
-    fn load_items(&self, range: Range<usize>, _sorting: &[(usize, SortMode)]) -> Vec<Self::Item> {
+    fn load_items(&self, range: Range<usize>, _query: &()) -> Vec<Self::Item> {
         BOOKS[range.clone()].to_vec()
     }
 
-    fn item_count(&self) -> usize {
+    fn item_count(&self, _query: &()) -> usize {
         BOOKS.len()
     }
 }

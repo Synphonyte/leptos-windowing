@@ -1,5 +1,5 @@
 [package]
-name = "basic_tailwind"
+name = "basic_pagination"
 version = "0.1.0"
 edition = "2024"
 

@@ -1,11 +1,11 @@
-# Basic Leptos Windowing Example
+# Basic Pagination Example
 
-This example demonstrates the basic usage of leptos-windowing for efficiently rendering large lists with virtual scrolling. The styling is handled using Tailwind CSS classes.
+This example demonstrates the basic usage of leptos-windowing for efficiently rendering large lists with pagination. The styling is handled using Tailwind CSS classes.
 
 To make this example work, you must download / fork the whole repo because this is in the dependencies: `leptos-windowing = { path = "../.." }`.
 
-If you don't have it installed already, install [Trunk](https://trunkrs.dev/) and [Tailwind](https://tailwindcss.com/docs/installation)
-as well as the wasm32-unknown-unknown target:
+If you don't have already installed it, install [Trunk](https://trunkrs.dev/) and [Tailwind](https://tailwindcss.com/docs/installation)
+as well as the `wasm32-unknown-unknown` target:
 
 ```bash
 cargo install trunk
