@@ -1,7 +1,5 @@
 use std::fmt::Debug;
 
-use crate::SortMode;
-
 /// Loader trait for loading items on-demand from a paginated data source.
 ///
 /// Please note that this is independent of if you use pagination or virtualization in your UI.
@@ -14,23 +12,28 @@ pub trait PaginatedLoader {
     /// The type of items that will be loaded.
     type Item;
 
+    /// The type of the query data that will be used to load items.
+    ///
+    /// Can be used to filter or sort the items for example.
+    type Query;
+
     /// The type of errors that can occur during loading.
     type Error: Debug;
 
-    /// Get all data items specified by the page index (starts a 0).
+    /// Get all data items specified by the page index (starts a 0) and the query.
     ///
     /// If you return less than `PAGE_ITEM_COUNT` rows, it is assumed that the end of the
     /// data has been reached.
     fn load_page(
         &self,
         page_index: usize,
-        sorting: &[(usize, SortMode)],
+        query: &Self::Query,
     ) -> impl Future<Output = Result<Vec<Self::Item>, Self::Error>>;
 
-    /// The total number of items of this data source.
+    /// The total number of items of this data source with respect to the given query.
     ///
     /// Returns `Ok(None)` if unknown (which is the default).
-    fn count(&self) -> impl Future<Output = Result<Option<PaginatedCount>, Self::Error>> {
+    fn count(&self, _query: &Self::Query) -> impl Future<Output = Result<Option<PaginatedCount>, Self::Error>> {
         async { Ok(None) }
     }
 }

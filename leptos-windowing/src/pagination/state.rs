@@ -1,9 +1,5 @@
-use std::collections::VecDeque;
-
 use leptos::prelude::*;
 use reactive_stores::Store;
-
-use crate::SortMode;
 
 /// The state of pagination.
 ///
@@ -16,12 +12,6 @@ pub struct PaginationState {
     pub page_count: Option<usize>,
     /// The error message if the page count could not be determined.
     pub page_count_error: Option<String>,
-
-    /// The sorting order of the data. The first element is the index of the for example column/row.
-    /// The second element is the sorting mode.
-    pub sorting: VecDeque<(usize, SortMode)>,
-
-    reload_trigger: usize,
 }
 
 impl PaginationState {
@@ -30,8 +20,6 @@ impl PaginationState {
             current_page: 0,
             page_count: None,
             page_count_error: None,
-            sorting: VecDeque::new(),
-            reload_trigger: 0,
         })
     }
 
@@ -59,12 +47,5 @@ impl PaginationState {
         } else {
             false
         }
-    }
-
-    /// Call this to clear the cache and reload the data.
-    pub fn trigger_reload(this_store: Store<Self>) {
-        this_store
-            .reload_trigger()
-            .update(|rt| *rt = rt.wrapping_add(1));
     }
 }

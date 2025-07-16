@@ -156,12 +156,13 @@ mod tests {
 
     #[test]
     fn test_missing_range() {
-        let mut cache = Cache::new();
+        let cache = Store::new(Cache::<i32>::new());
 
-        assert_eq!(cache.missing_range(0..10), Some(0..10));
-        assert_eq!(cache.missing_range(5..10), Some(5..10));
+        assert_eq!(cache.read_untracked().missing_range(0..10), Some(0..10));
+        assert_eq!(cache.read_untracked().missing_range(5..10), Some(5..10));
 
-        cache.write_loaded(
+        Cache::write_loaded(
+            cache,
             Ok(LoadedItems {
                 items: (0..5).into_iter().collect::<Vec<_>>(),
                 range: 0..5,
@@ -169,12 +170,12 @@ mod tests {
             0..5,
         );
 
-        assert_eq!(cache.missing_range(0..10), Some(5..10));
-        assert_eq!(cache.missing_range(5..10), Some(5..10));
+        assert_eq!(cache.read_untracked().missing_range(0..10), Some(5..10));
+        assert_eq!(cache.read_untracked().missing_range(5..10), Some(5..10));
 
-        cache.write_loading(5..9);
+        Cache::write_loading(cache, 5..9);
 
-        assert_eq!(cache.missing_range(0..10), Some(9..10));
-        assert_eq!(cache.missing_range(5..10), Some(9..10));
+        assert_eq!(cache.read_untracked().missing_range(0..10), Some(9..10));
+        assert_eq!(cache.read_untracked().missing_range(5..10), Some(9..10));
     }
 }

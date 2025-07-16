@@ -25,9 +25,13 @@ pub struct Loading {
 }
 
 #[component]
-pub fn PaginatedFor<T, L, CF, V, M>(
+pub fn PaginatedFor<T, L, Q, CF, V, M>(
     /// The loader to get the data on-demand.
     loader: L,
+
+    /// The query to get the data on-demand.
+    #[prop(into)]
+    query: Signal<Q>,
 
     /// The pagination state.
     ///
@@ -62,13 +66,15 @@ pub fn PaginatedFor<T, L, CF, V, M>(
 ) -> impl IntoView
 where
     T: Send + Sync + 'static + std::fmt::Debug + Clone,
-    L: InternalLoader<M, Item = T> + 'static,
+    L: InternalLoader<M, Item = T, Query = Q> + 'static,
+    Q: Send + Sync + 'static,
     CF: Fn((usize, Arc<T>)) -> V + Send + Clone + 'static,
     V: IntoView,
 {
     let window: ItemWindow<T> = use_pagination(
         state,
         loader,
+        query,
         item_count_per_page,
         UsePaginationOptions::default().overscan_page_count(overscan_page_count),
     );

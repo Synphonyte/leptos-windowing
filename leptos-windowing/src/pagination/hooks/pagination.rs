@@ -48,15 +48,17 @@ use crate::{
 /// - `loader`: The loader used to load items from the data source.
 /// - `item_count_per_page`: The number of items to display per page.
 /// - `options`: Additional options for the pagination logic.
-pub fn use_pagination<T, L, M>(
+pub fn use_pagination<T, L, Q, M>(
     state: Store<PaginationState>,
     loader: L,
+    query: impl Into<Signal<Q>>,
     item_count_per_page: impl Into<Signal<usize>>,
     options: UsePaginationOptions,
 ) -> ItemWindow<T>
 where
     T: Send + Sync + 'static,
-    L: InternalLoader<M, Item = T> + 'static,
+    L: InternalLoader<M, Item = T, Query = Q> + 'static,
+    Q: Send + Sync + 'static,
 {
     let UsePaginationOptions {
         overscan_page_count,
@@ -64,6 +66,7 @@ where
 
     let cache = Store::new(Cache::new());
     let loader = Signal::stored_local(loader);
+    let query = query.into();
 
     let item_count_per_page = item_count_per_page.into();
 
@@ -78,24 +81,37 @@ where
     });
 
     // Load item count
-    spawn_local(async move {
-        let count = loader.read().item_count().await;
+    Effect::new(move || {
+        query.track();
 
-        match count {
-            Ok(None) => {
-                *state.page_count_error().write() =
-                    Some("Data source didn't provide an item/page count".to_string())
+        spawn_local(async move {
+            let count = loader.read().item_count(&*query.read_untracked()).await;
+
+            match count {
+                Ok(None) => {
+                    *state.page_count_error().write() =
+                        Some("Data source didn't provide an item/page count".to_string())
+                    }
+                Ok(Some(count)) => {
+                    // This sets the page_count. See effect above.
+                    item_count.set(Some(count));
+                }
+                Err(err) => {
+                    *state.page_count_error().write() =
+                        Some(format!("Error fetching item/page count: {err:?}"))
+                }
             }
-            Ok(Some(count)) => {
-                // This already sets the page_count. See effect above.
-                item_count.set(Some(count));
-            }
-            Err(err) => {
-                *state.page_count_error().write() =
-                    Some(format!("Error fetching item/page count: {err:?}"))
-            }
-        }
+        });
     });
+
+    let reload_trigger = Trigger::new();
+
+    // Clear cache
+    Effect::new(move || {
+        query.track();
+        Cache::clear(cache);
+    });
+
 
     let start_index_to_load = Signal::derive(move || {
         let current_page = state.current_page().get();
@@ -119,10 +135,9 @@ where
     });
 
     // Load items
-    Effect::new(move |prev_clear_state| {
-        if Some((state.sorting().get(), state.reload_trigger().get())) != prev_clear_state {
-            Cache::clear(cache);
-        }
+    Effect::new(move || {
+        // we don't need to track the query here because it triggers cache invalidation which triggers reload_trigger
+        reload_trigger.track();
 
         let missing_range = cache.read().missing_range(range_to_load.get());
 
@@ -134,7 +149,7 @@ where
                     .read()
                     .load_items(
                         missing_range.clone(),
-                        &state.sorting().read_untracked().iter().copied().collect::<Vec<_>>(),
+                        &*query.read_untracked(),
                     )
                     .await;
 
@@ -147,8 +162,6 @@ where
                 Cache::write_loaded(cache, result.map_err(|e| format!("{e:?}")), missing_range);
             });
         }
-
-        (state.sorting().get(), state.reload_trigger().get())
     });
 
     let window_range = Memo::new(move |_| {
