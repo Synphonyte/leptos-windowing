@@ -11,6 +11,6 @@ resolver = "3"
 console_error_panic_hook = "0.1"
 console_log = "1"
 leptos = "0.8"
-leptos-windowing = { path = "../" }
+leptos-windowing = { path = "../leptos-windowing" }
 leptos-windowing-examples = { path = "." }
 log = "0.4"

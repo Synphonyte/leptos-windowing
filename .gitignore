@@ -1,1 +1,7 @@
-/target
+target
+dist
+Cargo.lock
+node_modules
+package*.json
+.DS_Store
+*.sqlite3-wal
