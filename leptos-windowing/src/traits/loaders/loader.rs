@@ -19,7 +19,7 @@ pub trait Loader {
     type Query;
 
     /// The type of errors that can occur during loading.
-    type Error: Debug;
+    type Error: Debug + 'static;
 
     /// Does the actual loading of items.
     ///
@@ -38,7 +38,10 @@ pub trait Loader {
     /// The total number of items of this data source with respect to the query.
     ///
     /// Returns `Ok(None)` if unknown (which is the default).
-    fn item_count(&self, _query: &Self::Query) -> impl Future<Output = Result<Option<usize>, Self::Error>> {
+    fn item_count(
+        &self,
+        _query: &Self::Query,
+    ) -> impl Future<Output = Result<Option<usize>, Self::Error>> {
         async { Ok(None) }
     }
 }

@@ -4,10 +4,10 @@ use leptos::prelude::*;
 use reactive_stores::{Store, StoreFieldIterator};
 
 use crate::{
+    InternalLoader, ItemWindow,
     cache::CacheStoreFields,
     item_state::ItemState,
-    pagination::{use_pagination, PaginationState, UsePaginationOptions},
-    InternalLoader, ItemWindow,
+    pagination::{PaginationState, UsePaginationOptions, use_pagination},
 };
 
 /// Slot that is rendered when an error occurs.
@@ -65,7 +65,7 @@ pub fn PaginatedFor<T, L, Q, CF, V, M>(
     #[prop(optional)] _marker: PhantomData<(M, L)>,
 ) -> impl IntoView
 where
-    T: Send + Sync + 'static + std::fmt::Debug + Clone,
+    T: Send + Sync + 'static,
     L: InternalLoader<M, Item = T, Query = Q> + 'static,
     Q: Send + Sync + 'static,
     CF: Fn((usize, Arc<T>)) -> V + Send + Clone + 'static,

@@ -18,7 +18,7 @@ pub trait PaginatedLoader {
     type Query;
 
     /// The type of errors that can occur during loading.
-    type Error: Debug;
+    type Error: Debug + 'static;
 
     /// Get all data items specified by the page index (starts a 0) and the query.
     ///
@@ -33,12 +33,16 @@ pub trait PaginatedLoader {
     /// The total number of items of this data source with respect to the given query.
     ///
     /// Returns `Ok(None)` if unknown (which is the default).
-    fn count(&self, _query: &Self::Query) -> impl Future<Output = Result<Option<PaginatedCount>, Self::Error>> {
+    fn count(
+        &self,
+        _query: &Self::Query,
+    ) -> impl Future<Output = Result<Option<PaginatedCount>, Self::Error>> {
         async { Ok(None) }
     }
 }
 
 /// Return type of [`PaginatedLoader::count`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PaginatedCount {
     /// If your data source tells you how many pages there are, then use this.
     Pages(usize),

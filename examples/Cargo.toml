@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [workspace]
-members = ["basic_pagination"]
+members = ["pagination_basic", "pagination_rest_api"]
 resolver = "3"
 
 [workspace.dependencies]

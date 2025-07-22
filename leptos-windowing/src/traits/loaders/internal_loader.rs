@@ -18,7 +18,7 @@ pub trait InternalLoader<M> {
     type Query;
 
     /// The type of errors that can occur during loading.
-    type Error: Debug;
+    type Error: Debug + 'static;
 
     /// Loads the items respecting the given `range` and `query` together with `CHUNK_SIZE`.
     fn load_items(
@@ -51,7 +51,10 @@ pub trait InternalLoader<M> {
     /// The total number of items of this data source.
     ///
     /// Returns `Ok(None)` if unknown (which is the default).
-    fn item_count(&self, _query: &Self::Query) -> impl Future<Output = Result<Option<usize>, Self::Error>> {
+    fn item_count(
+        &self,
+        _query: &Self::Query,
+    ) -> impl Future<Output = Result<Option<usize>, Self::Error>> {
         async { Ok(None) }
     }
 }
@@ -144,7 +147,7 @@ impl<L> InternalLoader<PaginatedLoaderMarker> for L
 where
     L: PaginatedLoader,
 {
-    const CHUNK_SIZE: Option<usize> = L::CHUNK_SIZE;
+    const CHUNK_SIZE: Option<usize> = Some(L::PAGE_ITEM_COUNT);
 
     type Item = L::Item;
     type Query = L::Query;
@@ -159,17 +162,22 @@ where
         let Range { start, end } = range;
 
         debug_assert_eq!(start % L::PAGE_ITEM_COUNT, 0);
-        debug_assert_eq!(end - start, L::PAGE_ITEM_COUNT);
+        debug_assert_eq!((end - start) % L::PAGE_ITEM_COUNT, 0);
 
-        self.load_page(start / L::PAGE_ITEM_COUNT, query)
-            .await
-            .map(|items| {
-                let len = items.len();
-                LoadedItems {
-                    items,
-                    range: start..start + len,
-                }
-            })
+        let mut loaded = Vec::with_capacity(end - start);
+
+        for cur_start in (start..end).step_by(L::PAGE_ITEM_COUNT) {
+            loaded.extend(
+                self.load_page(cur_start / L::PAGE_ITEM_COUNT, query)
+                    .await?,
+            );
+        }
+
+        let len = loaded.len();
+        Ok(LoadedItems {
+            items: loaded,
+            range: start..start + len,
+        })
     }
 
     #[inline]

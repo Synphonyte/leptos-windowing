@@ -1,13 +1,11 @@
-use std::ops::Range;
+mod loader;
+mod models;
 
 use leptos::prelude::*;
-use leptos_windowing::{
-    pagination::{
-        Loading, PaginatedFor, PaginationNext, PaginationPages, PaginationPrev, PaginationState,
-    },
-    MemoryLoader,
+use leptos_windowing::pagination::{
+    Loading, PaginatedFor, PaginationNext, PaginationPages, PaginationPrev, PaginationState,
 };
-use leptos_windowing_examples::data::{Book, BOOKS};
+use loader::{BreweryLoader, BreweryQuery};
 
 fn main() {
     _ = console_log::init_with_level(log::Level::Debug);
@@ -20,12 +18,33 @@ fn main() {
 pub fn App() -> impl IntoView {
     let state = PaginationState::new();
 
+    let (query, set_query) = signal(BreweryQuery::default());
+
     view! {
         <ul class="m-10 text-sm rounded-md border dark:border-gray-700 overflow-clip">
-            <PaginatedFor loader=BookLoader query=() state item_count_per_page=5 let:idx_book>
+            <PaginatedFor loader=BreweryLoader query state item_count_per_page=10 let:idx_brewery>
                 <li class="p-2 border-b dark:border-gray-700">
-                    <h3 class="font-bold">{idx_book.1.title}</h3>
-                    <p class="text-gray-500 dark:text-gray-400">{idx_book.1.author}</p>
+                    <h3 class="font-bold">{idx_brewery.1.name.clone()}</h3>
+                    <p class="text-gray-500 dark:text-gray-400">
+                        {idx_brewery.1.city.clone()} ", " {idx_brewery.1.country.clone()}
+                    </p>
+                    <p class="text-gray-500 dark:text-gray-400">
+                        "Website: "
+                        {idx_brewery
+                            .1
+                            .website_url
+                            .as_ref()
+                            .map(|url| {
+                                view! {
+                                    <a href=url.clone() target="_blank">
+                                        {url.clone()}
+                                    </a>
+                                }
+                                    .into_any()
+                            })
+                            .unwrap_or("N/A".into_any())}
+
+                    </p>
                 </li>
 
                 <Loading slot>
@@ -33,7 +52,8 @@ pub fn App() -> impl IntoView {
                     <li class="p-2 border-b animate-pulse dark:border-gray-700">
                         <div>
                             <div class="my-1 w-3/4 h-4 bg-gray-300 rounded dark:bg-gray-600"></div>
-                            <div class="my-1 w-1/2 h-3 bg-gray-200 rounded dark:bg-gray-700"></div>
+                            <div class="my-1 w-2/3 h-3.5 bg-gray-200 rounded dark:bg-gray-700"></div>
+                            <div class="my-1 w-1/2 h-3.5 bg-gray-200 rounded dark:bg-gray-700"></div>
                         </div>
                     </li>
                 </Loading>
@@ -67,20 +87,5 @@ pub fn App() -> impl IntoView {
                 />
             </nav>
         </div>
-    }
-}
-
-pub struct BookLoader;
-
-impl MemoryLoader for BookLoader {
-    type Item = Book;
-    type Query = ();
-
-    fn load_items(&self, range: Range<usize>, _query: &()) -> Vec<Self::Item> {
-        BOOKS[range.clone()].to_vec()
-    }
-
-    fn item_count(&self, _query: &()) -> usize {
-        BOOKS.len()
     }
 }

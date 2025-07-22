@@ -5,6 +5,7 @@
 //! is very easy to use even for small datasets.
 
 mod cache;
+pub mod hook;
 pub mod item_state;
 pub mod pagination;
 mod traits;

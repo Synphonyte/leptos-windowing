@@ -15,11 +15,21 @@ where
     T: Send + Sync + 'static,
 {
     items: Vec<ItemState<T>>,
+    item_count: Option<usize>,
+}
+
+impl<T: Send + Sync + 'static> Default for Cache<T> {
+    fn default() -> Self {
+        Self {
+            items: Vec::new(),
+            item_count: None,
+        }
+    }
 }
 
 impl<T: Send + Sync + 'static> Cache<T> {
-    pub fn new() -> Self {
-        Self { items: vec![] }
+    pub fn new_store() -> Store<Self> {
+        Store::new(Self::default())
     }
 
     #[inline]
@@ -114,21 +124,35 @@ impl<T: Send + Sync + 'static> Cache<T> {
 
         let slice = &self.items[range_to_load.start..existing_range_end];
 
-        let start = slice.iter().position(do_load_predicate)?;
-        let end = slice.iter().rposition(do_load_predicate)?;
-
+        let start = slice
+            .iter()
+            .position(do_load_predicate)
+            .unwrap_or(slice.len());
         let start = start + range_to_load.start;
-        let end = end + range_to_load.start + 1;
 
-        Some(start..end.max(range_to_load.end))
+        let mut end = if range_to_load.end >= self.items.len() {
+            range_to_load.end
+        } else {
+            slice.iter().rposition(do_load_predicate)? + range_to_load.start + 1
+        };
+
+        if let Some(item_count) = self.item_count {
+            end = end.min(item_count);
+        }
+
+        Some(
+            start
+                ..end
+                    .max(range_to_load.end)
+                    .min(self.item_count.unwrap_or(usize::MAX)),
+        )
     }
 
     #[inline]
     /// Sets all items in the cache to the placeholder state.
     pub fn clear(this_store: Store<Self>) {
-        this_store
-            .items()
-            .update(|items| items.fill(ItemState::Placeholder));
+        this_store.items().write().fill(ItemState::Placeholder);
+        this_store.item_count().set(None);
     }
 }
 
@@ -156,7 +180,7 @@ mod tests {
 
     #[test]
     fn test_missing_range() {
-        let cache = Store::new(Cache::<i32>::new());
+        let cache = Cache::<i32>::new_store();
 
         assert_eq!(cache.read_untracked().missing_range(0..10), Some(0..10));
         assert_eq!(cache.read_untracked().missing_range(5..10), Some(5..10));
@@ -164,7 +188,7 @@ mod tests {
         Cache::write_loaded(
             cache,
             Ok(LoadedItems {
-                items: (0..5).into_iter().collect::<Vec<_>>(),
+                items: (0..5).collect::<Vec<_>>(),
                 range: 0..5,
             }),
             0..5,
@@ -172,10 +196,12 @@ mod tests {
 
         assert_eq!(cache.read_untracked().missing_range(0..10), Some(5..10));
         assert_eq!(cache.read_untracked().missing_range(5..10), Some(5..10));
+        assert_eq!(cache.read_untracked().missing_range(5..20), Some(5..20));
 
         Cache::write_loading(cache, 5..9);
 
         assert_eq!(cache.read_untracked().missing_range(0..10), Some(9..10));
         assert_eq!(cache.read_untracked().missing_range(5..10), Some(9..10));
+        assert_eq!(cache.read_untracked().missing_range(5..20), Some(9..20));
     }
 }

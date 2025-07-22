@@ -22,5 +22,5 @@ where
     T: Send + Sync + 'static,
 {
     pub cache: Store<Cache<T>>,
-    pub range: Memo<Range<usize>>,
+    pub range: Signal<Range<usize>>,
 }
