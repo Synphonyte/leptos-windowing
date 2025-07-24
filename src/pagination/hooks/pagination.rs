@@ -21,10 +21,8 @@ use crate::{
 /// ```
 /// # use leptos_windowing::pagination::{use_pagination, use_pagination_controls, UsePaginationOptions, UsePaginationControlsOptions, PaginationState};
 /// #
-/// let state = PaginationState::default();
+/// let state = PaginationState::new_store();
 ///
-/// // This is the simplest way to implement a loader for a `Vec<ExampleItem>`.
-/// #[derive(MemoryLoader)]
 /// pub struct ExampleItem {
 ///     num: usize,
 /// }
@@ -36,6 +34,7 @@ use crate::{
 /// let window = use_pagination(
 ///     state,
 ///     data,
+///     (),
 ///     20, // items per page
 ///     UsePaginationOptions::default(),
 /// );

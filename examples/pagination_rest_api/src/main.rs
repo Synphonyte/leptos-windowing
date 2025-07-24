@@ -16,13 +16,13 @@ fn main() {
 
 #[component]
 pub fn App() -> impl IntoView {
-    let state = PaginationState::new();
+    let state = PaginationState::new_store();
 
     let query = RwSignal::new(BreweryQuery::default());
 
     view! {
         <div class="m-10 mb-0 text-sm rounded-md shadow-xs" role="group">
-            <div class="mb-2 ml-2">"Sort by"</div>
+            <div class="mb-2 ml-2 text-gray-900 dark:text-white">"Sort by"</div>
             <div class="flex" role="group">
                 <SortButton query column=Column::Name />
                 <SortButton query column=Column::City />
@@ -30,10 +30,12 @@ pub fn App() -> impl IntoView {
             </div>
         </div>
 
-        <ul class="m-10 text-sm rounded-md border dark:border-gray-700 overflow-clip">
+        <ul class="m-10 text-sm bg-white rounded-md border border-gray-200 dark:bg-gray-800 dark:border-gray-700 overflow-clip">
             <PaginatedFor loader=BreweryLoader query state item_count_per_page=10 let:idx_brewery>
-                <li class="p-2 border-b dark:border-gray-700">
-                    <h3 class="font-bold">{idx_brewery.1.name.clone()}</h3>
+                <li class="p-2 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="font-bold text-gray-900 dark:text-white">
+                        {idx_brewery.1.name.clone()}
+                    </h3>
                     <p class="text-gray-500 dark:text-gray-400">
                         {idx_brewery.1.city.clone()} ", " {idx_brewery.1.country.clone()}
                     </p>
@@ -70,7 +72,12 @@ pub fn App() -> impl IntoView {
                                 }
                                     .into_any()
                             })
-                            .unwrap_or("N/A".into_any())}
+                            .unwrap_or(
+                                view! {
+                                    <span class="text-gray-500 dark:text-gray-400">"N/A"</span>
+                                }
+                                    .into_any(),
+                            )}
 
                     </p>
                 </li>
@@ -111,7 +118,7 @@ pub fn App() -> impl IntoView {
                     li_class="border border-gray-300 dark:border-gray-700 border-l-0 first:border-l first:rounded-l-lg last:rounded-r-lg bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
                     active_class="bg-blue-600 font-bold hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 first:rounded-l-lg last:rounded-r-lg *:text-white *:hover:text-white dark:*:text-white dark:*:hover:text-white"
                     anchor_class="flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white cursor-pointer select-none"
-                    separator_class="self-center select-none mx-2"
+                    separator_class="self-center select-none mx-2 text-gray-500 dark:text-gray-400"
                 />
             </nav>
         </div>

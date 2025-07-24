@@ -4,10 +4,10 @@ use leptos::prelude::*;
 use reactive_stores::{Store, StoreFieldIterator};
 
 use crate::{
-    InternalLoader, ItemWindow,
     cache::CacheStoreFields,
     item_state::ItemState,
-    pagination::{PaginationState, UsePaginationOptions, use_pagination},
+    pagination::{use_pagination, PaginationState, UsePaginationOptions},
+    InternalLoader, ItemWindow,
 };
 
 /// Slot that is rendered when an error occurs.
@@ -24,6 +24,74 @@ pub struct Loading {
     children: ChildrenFn,
 }
 
+/// Quite similar to Leptos' `<For>` this displays a list of items.
+///
+/// But these items are loaded and cached on-demand using the provided `loader`.
+///
+/// ## Example
+///
+/// ```
+/// # use leptos::prelude::*;
+/// # use leptos_windowing::pagination::{Loading, PaginatedFor, PaginationState};
+///
+/// pub struct Book {
+///     title: String,
+///     author: String,
+/// }
+///
+/// let state = PaginationState::new_store();
+///
+/// view! {
+///     <ul>
+///         <PaginatedFor
+///             loader=BookLoader
+///             query=()
+///             state
+///             item_count_per_page=20
+///             let:idx_book
+///         >
+///             // Shown when the data has finished loading.
+///             <li class={if idx_book.0 % 2 == 0 { "even" } else { "odd" }}>
+///                 <h3>{idx_book.1.title}</h3>
+///                 <p>{idx_book.1.author}</p>
+///             </li>
+///
+///             // Shown while the data is loading.
+///             <Loading slot>
+///                 <li class="loading">Loading...</li>
+///             </Loading>
+///         </PaginatedFor>
+///     </ul>
+///
+///     <div class="pagination-buttons">
+///         <PaginationPrev state attr:class="pagination-prev">
+///             "Previous"
+///         </PaginationPrev>
+///         <PaginationNext state attr:class="pagination-next">
+///             "Next"
+///         </PaginationNext>
+///     </div>
+/// }
+///
+/// pub struct BookLoader;
+///
+/// impl ExactLoader for BookLoader {
+///     type Item = Book;
+///     type Query = ();
+///     type Error = ();
+///
+///     async fn load_items(&self, range: Range<usize>, query: &Self::Query) -> Result<Vec<Self::Item>, Self::Error> {
+///         todo!()
+///     }
+///
+///     async fn item_count(&self, _query: &Self::Query) -> Result<Option<usize>, Self::Error> {
+///         todo!()
+///     }
+/// }
+///
+/// ```
+///
+/// For more in-depth demonstration, please refer to the example `pagination_rest_api`.
 #[component]
 pub fn PaginatedFor<T, L, Q, CF, V, M>(
     /// The loader to get the data on-demand.

@@ -15,7 +15,7 @@ pub struct PaginationState {
 }
 
 impl PaginationState {
-    pub fn new() -> Store<Self> {
+    pub fn new_store() -> Store<Self> {
         Store::new(Self {
             current_page: 0,
             page_count: None,

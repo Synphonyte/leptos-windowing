@@ -6,10 +6,15 @@ use crate::pagination::{
     UsePaginationControlsOptions,
 };
 
+/// A component that renders pagination page controls.
+///
+/// ## Example
+///
+/// ```
+/// ```
 #[component]
-/// A component that renders a pagination page controls.
 pub fn PaginationPages(
-    /// The current state of the pagination. This is used to communicate with the PaginateItems component.
+    /// The current state of the pagination. This is used to communicate with the PaginatedFor component.
     state: Store<PaginationState>,
 
     /// How many pages to show around the current page. This number includes the current page.
@@ -159,7 +164,7 @@ pub fn PaginationRange(
 #[component]
 /// Button to navigate to the next page.
 pub fn PaginationNext(
-    /// The current state of the pagination. This is used to communicate with the PaginateItems component.
+    /// The current state of the pagination. This is used to communicate with the PaginatedFor component.
     state: Store<PaginationState>,
     children: Children,
 ) -> impl IntoView {
@@ -176,7 +181,7 @@ pub fn PaginationNext(
 #[component]
 /// Button to navigate to the previous page.
 pub fn PaginationPrev(
-    /// The current state of the pagination. This is used to communicate with the PaginateItems component.
+    /// The current state of the pagination. This is used to communicate with the PaginatedFor component.
     state: Store<PaginationState>,
     children: Children,
 ) -> impl IntoView {

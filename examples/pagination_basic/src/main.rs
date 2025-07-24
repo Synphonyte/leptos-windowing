@@ -16,13 +16,13 @@ fn main() {
 
 #[component]
 pub fn App() -> impl IntoView {
-    let state = PaginationState::new();
+    let state = PaginationState::new_store();
 
     view! {
-        <ul class="m-10 text-sm rounded-md border dark:border-gray-700 overflow-clip">
+        <ul class="m-10 text-sm bg-white rounded-md border border-gray-300 dark:bg-gray-800 dark:border-gray-700 overflow-clip">
             <PaginatedFor loader=BookLoader query=() state item_count_per_page=5 let:idx_book>
-                <li class="p-2 border-b dark:border-gray-700">
-                    <h3 class="font-bold">{idx_book.1.title}</h3>
+                <li class="p-2 bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                    <h3 class="font-bold text-gray-900 dark:text-white">{idx_book.1.title}</h3>
                     <p class="text-gray-500 dark:text-gray-400">{idx_book.1.author}</p>
                 </li>
             </PaginatedFor>
@@ -51,7 +51,7 @@ pub fn App() -> impl IntoView {
                     li_class="border border-gray-300 dark:border-gray-700 border-l-0 first:border-l first:rounded-l-lg last:rounded-r-lg bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
                     active_class="bg-blue-600 font-bold hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 first:rounded-l-lg last:rounded-r-lg *:text-white *:hover:text-white dark:*:text-white dark:*:hover:text-white"
                     anchor_class="flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white cursor-pointer select-none"
-                    separator_class="self-center select-none mx-2"
+                    separator_class="self-center select-none mx-2 text-gray-500 dark:text-gray-400"
                 />
             </nav>
         </div>

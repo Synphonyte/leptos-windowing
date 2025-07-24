@@ -5,6 +5,10 @@ use reactive_stores::Store;
 
 use crate::pagination::{PaginationState, PaginationStateStoreFields};
 
+/// Hook for pagination page controls.
+///
+/// Depending on the current page and some configuration options,
+/// this hook returns page ranges that can be used to display pagination controls.
 pub fn use_pagination_controls(
     state: Store<PaginationState>,
     options: UsePaginationControlsOptions,
