@@ -28,26 +28,31 @@ impl<T: Send + Sync + 'static> Default for Cache<T> {
 }
 
 impl<T: Send + Sync + 'static> Cache<T> {
+    /// Create a new store of the cache.
     pub fn new_store() -> Store<Self> {
         Store::new(Self::default())
     }
 
     #[inline]
+    /// Length of the cache.
     pub fn len(&self) -> usize {
         self.items.len()
     }
 
     #[inline]
+    /// Resize the cache to the specified length.
     pub fn resize(&mut self, len: usize) {
         self.items.resize(len, ItemState::Placeholder);
     }
 
+    /// Grow the cache size to the specified length.
     pub fn grow(&mut self, len: usize) {
         if self.items.len() < len {
             self.items.resize(len, ItemState::Placeholder);
         }
     }
 
+    /// Marks the specified range of items as loading.
     pub fn write_loading(this_store: Store<Self>, range: Range<usize>) {
         if range.end > this_store.items().read().len() {
             this_store
@@ -66,6 +71,9 @@ impl<T: Send + Sync + 'static> Cache<T> {
         }
     }
 
+    /// Called after the loader has finished loading items.
+    ///
+    /// This will update the respective range of items with the loaded data (or errors).
     pub fn write_loaded(
         this_store: Store<Self>,
         loading_result: Result<LoadedItems<T>, String>,

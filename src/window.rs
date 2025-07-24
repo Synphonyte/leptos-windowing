@@ -1,21 +1,13 @@
 use std::ops::Range;
 
 use leptos::prelude::*;
-use reactive_stores::{AtIndex, Store, Subfield};
+use reactive_stores::Store;
 
-#[derive(Debug)]
-pub struct WindowItem<T: Send + Sync + 'static> {
-    pub index: usize,
-    pub state: StateAtIndex<T>,
-}
+use crate::cache::Cache;
 
-pub type StateAtIndex<T> = AtIndex<
-    Subfield<Store<Cache<T>, SyncStorage>, Cache<T>, Vec<RwSignal<ItemState<T>>>>,
-    Vec<RwSignal<ItemState<T>>>,
->;
-
-use crate::{cache::Cache, item_state::ItemState};
-
+/// This is bascially a signal of a slice of the internal cache.
+///
+/// This is returned by [`use_pagination`] and [`use_virtualization`](http://TO.DO).
 #[derive(Copy, Clone)]
 pub struct ItemWindow<T>
 where

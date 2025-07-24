@@ -31,14 +31,19 @@ pub struct Loading {
 /// ## Example
 ///
 /// ```
+/// # use std::ops::Range;
+/// #
 /// # use leptos::prelude::*;
-/// # use leptos_windowing::pagination::{Loading, PaginatedFor, PaginationState};
-///
+/// # use leptos_windowing::pagination::{Loading, PaginatedFor, PaginationState, PaginationPrev, PaginationNext};
+/// # use leptos_windowing::ExactLoader;
+/// #
 /// pub struct Book {
 ///     title: String,
 ///     author: String,
 /// }
 ///
+/// # #[component]
+/// # pub fn App() -> impl IntoView {
 /// let state = PaginationState::new_store();
 ///
 /// view! {
@@ -52,8 +57,8 @@ pub struct Loading {
 ///         >
 ///             // Shown when the data has finished loading.
 ///             <li class={if idx_book.0 % 2 == 0 { "even" } else { "odd" }}>
-///                 <h3>{idx_book.1.title}</h3>
-///                 <p>{idx_book.1.author}</p>
+///                 <h3>{idx_book.1.title.clone()}</h3>
+///                 <p>{idx_book.1.author.clone()}</p>
 ///             </li>
 ///
 ///             // Shown while the data is loading.
@@ -72,6 +77,7 @@ pub struct Loading {
 ///         </PaginationNext>
 ///     </div>
 /// }
+/// # }
 ///
 /// pub struct BookLoader;
 ///

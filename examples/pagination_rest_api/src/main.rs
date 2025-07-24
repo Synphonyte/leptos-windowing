@@ -31,7 +31,7 @@ pub fn App() -> impl IntoView {
         </div>
 
         <ul class="m-10 text-sm bg-white rounded-md border border-gray-200 dark:bg-gray-800 dark:border-gray-700 overflow-clip">
-            <PaginatedFor loader=BreweryLoader query state item_count_per_page=10 let:idx_brewery>
+            <PaginatedFor loader=BreweryLoader query state item_count_per_page=5 let:idx_brewery>
                 <li class="p-2 border-b border-gray-200 dark:border-gray-700">
                     <h3 class="font-bold text-gray-900 dark:text-white">
                         {idx_brewery.1.name.clone()}

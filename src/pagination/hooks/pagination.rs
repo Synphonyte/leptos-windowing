@@ -19,7 +19,10 @@ use crate::{
 /// ## Usage
 ///
 /// ```
+/// # use std::ops::Range;
+/// #
 /// # use leptos_windowing::pagination::{use_pagination, use_pagination_controls, UsePaginationOptions, UsePaginationControlsOptions, PaginationState};
+/// # use leptos_windowing::MemoryLoader;
 /// #
 /// let state = PaginationState::new_store();
 ///
@@ -27,13 +30,28 @@ use crate::{
 ///     num: usize,
 /// }
 ///
-/// // Generate example data
-/// let data: Vec<ExampleItem> = (0..100).map(|i| ExampleItem { num: i }).collect();
+/// // Implement Loader for example data
+/// pub struct ExampleLoader;
 ///
-/// // Use `window.iter()` with `<For>` to display the items.
+/// impl MemoryLoader for ExampleLoader {
+///     type Item = ExampleItem;
+///     type Query = ();
+///
+///     fn load_items(&self, range: Range<usize>, query: &Self::Query) -> Vec<Self::Item> {
+///         // Generate example data
+///         range.map(|i| ExampleItem { num: i }).collect()
+///     }
+///
+///     fn item_count(&self, query: &Self::Query) -> usize {
+///         // Let's say we have 1000 items in total
+///         1000
+///     }
+/// }
+///
+/// // See PaginatedFor for how to build a pagination component with the returned window from this hook.
 /// let window = use_pagination(
 ///     state,
-///     data,
+///     ExampleLoader,
 ///     (),
 ///     20, // items per page
 ///     UsePaginationOptions::default(),

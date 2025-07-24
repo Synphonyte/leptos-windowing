@@ -9,6 +9,8 @@ use crate::pagination::{PaginationState, PaginationStateStoreFields};
 ///
 /// Depending on the current page and some configuration options,
 /// this hook returns page ranges that can be used to display pagination controls.
+///
+/// For an example, see [`use_pagination`].
 pub fn use_pagination_controls(
     state: Store<PaginationState>,
     options: UsePaginationControlsOptions,
