@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use gloo_net::http::{Request, RequestBuilder};
 use leptos_windowing::{PaginatedCount, PaginatedLoader};
 
@@ -6,33 +8,33 @@ use crate::models::{Brewery, MetaResponse};
 
 pub struct BreweryLoader;
 
-pub enum Sort {
+#[derive(Debug, Clone, Copy, Default)]
+pub enum SortDirection {
     Ascending,
     Descending,
+    #[default]
     None,
 }
 
-#[derive(Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum Column {
+    #[default]
+    Name,
+    City,
+    Country,
+}
+
+#[derive(Default, Clone)]
 pub struct BreweryQuery {
-    search: String,
-    sorting: Vec<(usize, Sort)>,
+    pub sorting_column: Column,
+    pub sorting_direction: SortDirection,
 }
 
 impl BreweryLoader {
-    fn url_sort_param_for_column(&self, column: usize) -> &'static str {
-        match column {
-            0 => "name",
-            1 => "city",
-            2 => "country",
-            _ => "",
-        }
-    }
-
-    fn url_sort_param_for_sort_pair(&self, pair: &(usize, Sort)) -> (&'static str, String) {
-        let col = self.url_sort_param_for_column(pair.0);
+    fn url_sort_param_for_sort_pair(&self, pair: &(Column, SortDirection)) -> (&'static str, String) {
         let dir = pair.1.to_api();
 
-        ("sort", format!("{}:{}", col, dir))
+        ("sort", format!("{}:{}", pair.0.to_string().to_lowercase(), dir))
     }
 
     fn get_builder(&self, page_index: usize, query: &BreweryQuery) -> RequestBuilder {
@@ -41,12 +43,8 @@ impl BreweryLoader {
             ("per_page", Self::PAGE_ITEM_COUNT.to_string()),
         ];
 
-        if !query.search.is_empty() {
-            query_pairs.push(("by_name", query.search.clone()));
-        }
-
-        for pair in &query.sorting {
-            query_pairs.push(self.url_sort_param_for_sort_pair(pair));
+        if !matches!(query.sorting_direction, SortDirection::None) {
+            query_pairs.push(self.url_sort_param_for_sort_pair(&(query.sorting_column, query.sorting_direction)));
         }
 
         Request::get("https://api.openbrewerydb.org/v1/breweries").query(query_pairs)
@@ -80,14 +78,8 @@ impl PaginatedLoader for BreweryLoader {
         Ok(resp)
     }
 
-    async fn count(&self, query: &Self::Query) -> Result<Option<PaginatedCount>, Self::Error> {
-        let mut builder = Request::get("https://api.openbrewerydb.org/v1/breweries/meta");
-
-        if !query.search.is_empty() {
-            builder = builder.query([("by_name", &query.search)]);
-        }
-
-        let resp: MetaResponse = builder
+    async fn count(&self, _query: &Self::Query) -> Result<Option<PaginatedCount>, Self::Error> {
+        let resp: MetaResponse = Request::get("https://api.openbrewerydb.org/v1/breweries/meta")
             .send()
             .await?
             .json()
@@ -97,12 +89,30 @@ impl PaginatedLoader for BreweryLoader {
     }
 }
 
-impl Sort {
+impl SortDirection {
     fn to_api(&self) -> &'static str {
         match self {
-            Sort::Ascending => "asc",
-            Sort::Descending => "desc",
-            Sort::None => "",
+            SortDirection::Ascending => "asc",
+            SortDirection::Descending => "desc",
+            SortDirection::None => "",
+        }
+    }
+
+    pub fn next(&mut self) {
+        match self {
+            SortDirection::Ascending => *self = SortDirection::Descending,
+            SortDirection::Descending => *self = SortDirection::None,
+            SortDirection::None => *self = SortDirection::Ascending,
+        }
+    }
+}
+
+impl Display for Column {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Column::Name => write!(f, "Name"),
+            Column::City => write!(f, "City"),
+            Column::Country => write!(f, "Country"),
         }
     }
 }

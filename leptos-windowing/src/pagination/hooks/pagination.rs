@@ -90,11 +90,7 @@ where
 
     let range_to_load = Memo::new(move |_| {
         let start_index = start_index_to_load.get();
-        let mut end_index = end_index_to_load.get();
-
-        // if let Some(item_count) = item_count.get() {
-        //     end_index = end_index.min(item_count);
-        // }
+        let end_index = end_index_to_load.get();
 
         start_index..end_index
     });
@@ -102,11 +98,7 @@ where
     let range_to_display = Memo::new(move |_| {
         let item_count_per_page = item_count_per_page.get();
         let start_index = state.current_page().get() * item_count_per_page;
-        let mut end_index = start_index + item_count_per_page;
-
-        // if let Some(item_count) = item_count.get() {
-        //     end_index = end_index.min(item_count);
-        // }
+        let end_index = start_index + item_count_per_page;
 
         start_index..end_index
     });

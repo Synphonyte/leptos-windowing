@@ -13,4 +13,8 @@ console_log = "1"
 leptos = "0.8"
 leptos-windowing = { path = "../leptos-windowing" }
 leptos-windowing-examples = { path = "." }
+leptos-use = "0.16"
 log = "0.4"
+
+[dependencies]
+leptos-use.workspace = true
