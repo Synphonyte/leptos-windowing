@@ -2,7 +2,10 @@ use std::{fmt::Debug, ops::Range};
 
 use leptos::{prelude::*, reactive::spawn_local};
 
-use crate::{cache::{Cache, CacheStoreFields}, InternalLoader, ItemWindow};
+use crate::{
+    InternalLoader, ItemWindow,
+    cache::{Cache, CacheStoreFields},
+};
 
 /// Load items on demand and cache them.
 ///
@@ -24,6 +27,7 @@ use crate::{cache::{Cache, CacheStoreFields}, InternalLoader, ItemWindow};
 ///   - `Ok(None)`: The total number of items is unknown.
 ///   - `Err(e)`: An error occurred while loading the total number of items.
 /// - `ItemWindow<T>`: A window of items that can be used to render a list/table of items.
+#[must_use]
 pub fn use_load_on_demand<T, L, Q, E, M>(
     range_to_load: impl Into<Signal<Range<usize>>>,
     range_to_display: impl Into<Signal<Range<usize>>>,
@@ -49,34 +53,42 @@ where
     let item_count_result = RwSignal::new_local(Ok(None));
 
     let set_item_count = move |count: Result<Option<usize>, E>| {
-        cache.item_count().set(count.as_ref().ok().flatten().copied());
+        cache
+            .item_count()
+            .set(count.as_ref().ok().flatten().copied());
         item_count_result.set(count);
     };
 
-    // Load item count
-    Effect::new(move || {
-        query.track();
-        leptos::logging::log!("Loading item count");
-        spawn_local(async move {
-            let count = loader.read().item_count(&*query.read_untracked()).await;
-            leptos::logging::log!("Item count loaded: {count:?}");
-            set_item_count(count);
-        });
-    });
-
-    let reload_trigger = Trigger::new();
+    let reload_counter = RwSignal::new(0_usize);
 
     // Clear cache
     Effect::new(move || {
         query.track();
         Cache::clear(cache);
-        reload_trigger.notify();
+        reload_counter.update(|counter| *counter = counter.wrapping_add(1));
+    });
+
+    // Load item count
+    Effect::new(move || {
+        // we don't need to track the query here because it triggers cache invalidation which triggers reload_trigger
+        reload_counter.track();
+
+        spawn_local(async move {
+            let latest_reload_count = reload_counter.try_get_untracked();
+
+            let count = loader.read().item_count(&*query.read_untracked()).await;
+
+            // make sure the loaded count is still valid
+            if latest_reload_count == reload_counter.try_get_untracked() {
+                set_item_count(count);
+            }
+        });
     });
 
     // Load items
     Effect::new(move || {
         // we don't need to track the query here because it triggers cache invalidation which triggers reload_trigger
-        reload_trigger.track();
+        reload_counter.track();
 
         let missing_range = cache.read().missing_range(range_to_load.get());
 
@@ -84,20 +96,24 @@ where
             Cache::write_loading(cache, missing_range.clone());
 
             spawn_local(async move {
+                let latest_reload_count = reload_counter.try_get_untracked();
+
                 let result = loader
                     .read()
                     .load_items(missing_range.clone(), &*query.read_untracked())
                     .await;
 
-                if let Ok(loaded_items) = &result {
-                    if loaded_items.range.end < missing_range.end {
-                        set_item_count(Ok(Some(loaded_items.range.end)));
+                // make sure the loaded data is still valid
+                if latest_reload_count == reload_counter.try_get_untracked() {
+                    if let Ok(loaded_items) = &result {
+                        if loaded_items.range.end < missing_range.end {
+                            set_item_count(Ok(Some(loaded_items.range.end)));
+                        }
                     }
+
+                    Cache::write_loaded(cache, result.map_err(|e| format!("{e:?}")), missing_range);
                 }
 
-                // TODO : check if still relevant or other loading has started
-
-                Cache::write_loaded(cache, result.map_err(|e| format!("{e:?}")), missing_range);
             });
         }
 

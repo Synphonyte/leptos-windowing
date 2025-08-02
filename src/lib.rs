@@ -7,7 +7,7 @@
 //! ## Loading data
 //!
 //! Wether you use pagination or virtualization you have to provide the data to display.
-//! This is done through implementing the various `Loader` traits. Depending on your use case
+//! This is done through implementing one of the various `Loader` traits. Depending on your use case
 //! you should implement the trait that best fits your needs:
 //!
 //! - [`MemoryLoader`]: If your dataset is already in memory like in a `Vec`, `HashSet`, array, ...
@@ -47,11 +47,11 @@
 //! You'll see that there is really nothing special about them.
 
 mod cache;
-pub mod hook;
 pub mod item_state;
+mod loaders;
 pub mod pagination;
-mod traits;
+pub mod use_load_on_demand;
 mod window;
 
-pub use traits::*;
+pub use loaders::*;
 pub use window::*;

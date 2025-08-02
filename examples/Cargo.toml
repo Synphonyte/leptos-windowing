@@ -5,6 +5,7 @@ edition = "2024"
 
 [workspace]
 members = ["pagination_basic", "pagination_rest_api"]
+exclude = ["pagination_serverfn_sqlx"]
 resolver = "3"
 
 [workspace.dependencies]

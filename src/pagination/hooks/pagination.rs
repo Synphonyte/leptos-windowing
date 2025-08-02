@@ -5,8 +5,8 @@ use leptos::prelude::*;
 use reactive_stores::Store;
 
 use crate::{
-    hook::{use_load_on_demand, UseLoadOnDemandResult},
     pagination::{PaginationState, PaginationStateStoreFields},
+    use_load_on_demand::{use_load_on_demand, UseLoadOnDemandResult},
     InternalLoader, ItemWindow,
 };
 
@@ -67,6 +67,7 @@ use crate::{
 /// - `loader`: The loader used to load items from the data source.
 /// - `item_count_per_page`: The number of items to display per page.
 /// - `options`: Additional options for the pagination logic.
+#[must_use]
 pub fn use_pagination<T, L, Q, M>(
     state: Store<PaginationState>,
     loader: L,

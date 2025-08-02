@@ -67,7 +67,9 @@ impl<T: Send + Sync + 'static> Cache<T> {
             .skip(range.start)
             .take(range.len())
         {
-            *row.write() = ItemState::Loading;
+            if let Some(mut row) = row.try_write() {
+                *row = ItemState::Loading;
+            }
         }
     }
 
@@ -85,10 +87,9 @@ impl<T: Send + Sync + 'static> Cache<T> {
                 let _z = leptos::reactive::diagnostics::SpecialNonReactiveZone::enter();
 
                 if range.end > this_store.items().read_untracked().len() {
-                    this_store
-                        .items()
-                        .write()
-                        .resize(range.end, ItemState::Placeholder);
+                    if let Some(mut writer) = this_store.items().try_write() {
+                        writer.resize(range.end, ItemState::Placeholder);
+                    }
                 }
 
                 for (self_row, loaded_row) in this_store
@@ -97,7 +98,9 @@ impl<T: Send + Sync + 'static> Cache<T> {
                     .skip(range.start)
                     .zip(items)
                 {
-                    *self_row.write() = ItemState::Loaded(Arc::new(loaded_row));
+                    if let Some(mut writer) = self_row.try_write() {
+                        *writer = ItemState::Loaded(Arc::new(loaded_row));
+                    }
                 }
             }
             Err(error) => {
@@ -110,7 +113,9 @@ impl<T: Send + Sync + 'static> Cache<T> {
                 }
 
                 for row in this_store.items().iter_unkeyed() {
-                    *row.write() = ItemState::Error(error.clone());
+                    if let Some(mut writer) = row.try_write() {
+                        *writer = ItemState::Error(error.clone());
+                    }
                 }
             }
         }
