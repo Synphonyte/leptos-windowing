@@ -4,9 +4,9 @@ async fn main() {
     use axum::Router;
     use leptos::config::get_configuration;
     use leptos_axum::{generate_route_list, LeptosRoutes};
-    use pagination_serverfn_sqlx::{shell, App};
+    use serverfn_sqlx::{shell, App};
 
-    pagination_serverfn_sqlx::database::init_db().await;
+    serverfn_sqlx::database::init_db().await;
 
     let conf = get_configuration(Some("Cargo.toml")).unwrap();
     let leptos_options = conf.leptos_options;

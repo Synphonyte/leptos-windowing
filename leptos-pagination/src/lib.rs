@@ -1,13 +1,12 @@
-//! Virtualization and pagination for Leptos.
+//! Pagination for Leptos.
 //!
-//! This crate contains hooks and components for easy virtualization and pagination of data.
+//! This crate contains hooks and components for easy pagination of data.
 //! It provides efficient loading, caching and displaying of large data. At the same time it
 //! is very easy to use even for small datasets.
 //!
 //! ## Loading data
 //!
-//! Wether you use pagination or virtualization you have to provide the data to display.
-//! This is done through implementing one of the various `Loader` traits. Depending on your use case
+//! Loading data is done through implementing one of the various `Loader` traits. Depending on your use case
 //! you should implement the trait that best fits your needs:
 //!
 //! - [`MemoryLoader`]: If your dataset is already in memory like in a `Vec`, `HashSet`, array, ...
@@ -19,15 +18,13 @@
 //!
 //! ## Components
 //!
-//! This crate provides several components designed to help you with virtualization and pagination of data.
+//! This crate provides several components designed to help you with the pagination of data.
 //! These components are:
 //!
 //! - [`PaginatedFor`]: A component that displays a list of items in a paginated manner.
 //! - [`PaginationPages`]: A component that displays the buttons to jump to a certain page.
 //! - [`PaginationNext`]: A component that displays a button to navigate to the next page.
 //! - [`PaginationPrev`]: A component that displays a button to navigate to the previous page.
-//!
-//! > Virtualization components are coming soon
 //!
 //! Please refer to the examples to see how to use these components.
 //!
@@ -41,17 +38,15 @@
 //! - [`use_pagination`]: Logic for [`PaginatedFor`]. Handles loading items on-demand from the data source and caching them.
 //! - [`use_pagination_controls`]: Logic for [`PaginationPages`]. Returns page ranges that can be used to display pagination controls.
 //!
-//! > Virtualization hooks are coming soon
-//!
 //! If you want to implement your own custom components using these hooks, please have a look at the pre-made components in this crate.
 //! You'll see that there is really nothing special about them.
 
-mod cache;
-pub mod item_state;
-mod loaders;
-pub mod pagination;
-pub mod use_load_on_demand;
-mod window;
+mod components;
+mod hooks;
+mod state;
 
-pub use loaders::*;
-pub use window::*;
+pub use components::*;
+pub use hooks::*;
+pub use state::*;
+
+pub use leptos_windowing::*;

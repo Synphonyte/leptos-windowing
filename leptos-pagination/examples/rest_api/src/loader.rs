@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 use gloo_net::http::{Request, RequestBuilder};
-use leptos_windowing::{PaginatedCount, PaginatedLoader};
+use leptos_pagination::{PaginatedCount, PaginatedLoader};
 
 use crate::models::{Brewery, MetaResponse};
 

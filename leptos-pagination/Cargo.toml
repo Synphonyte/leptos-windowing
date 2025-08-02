@@ -1,0 +1,13 @@
+[package]
+name = "leptos-pagination"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+default-struct-builder = "0.5"
+leptos = "0.8"
+leptos-use = { version = "0.16", default-features = false, features = ["math"] }
+leptos-windowing = { version = "0.1.0", path = "../leptos-windowing" }
+reactive_stores = "0.2.3"
+serde = { version = "1.0.219", features = ["derive"] }
+web-sys = "0.3"

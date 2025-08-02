@@ -3,7 +3,7 @@ use leptos::prelude::*;
 use leptos_use::math::{use_not, use_or};
 use reactive_stores::Store;
 
-use crate::pagination::{PaginationState, PaginationStateStoreFields};
+use crate::{PaginationState, PaginationStateStoreFields};
 
 /// Hook for pagination page controls.
 ///

@@ -1,9 +1,9 @@
 use leptos::prelude::*;
 use reactive_stores::Store;
 
-use crate::pagination::{
-    PaginationControls, PaginationState, PaginationStateStoreFields, UsePaginationControlsOptions,
-    use_pagination_controls,
+use crate::{
+    use_pagination_controls, PaginationControls, PaginationState, PaginationStateStoreFields,
+    UsePaginationControlsOptions,
 };
 
 /// A component that renders pagination page controls.

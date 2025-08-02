@@ -1,5 +1,5 @@
 [package]
-name = "pagination_basic"
+name = "basic"
 version = "0.1.0"
 edition = "2024"
 
@@ -7,6 +7,6 @@ edition = "2024"
 console_error_panic_hook.workspace = true
 console_log.workspace = true
 leptos = { workspace = true, features = ["csr"] }
-leptos-windowing.workspace = true
-leptos-windowing-examples.workspace = true
+leptos-pagination.workspace = true
+leptos-pagination-examples.workspace = true
 log.workspace = true

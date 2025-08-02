@@ -1,5 +1,5 @@
 [package]
-name = "pagination_serverfn_sqlx"
+name = "serverfn_sqlx"
 version = "0.1.0"
 edition = "2021"
 
@@ -12,7 +12,7 @@ console_error_panic_hook = "0.1"
 http = "1"
 leptos = "0.8"
 leptos-use = "0.16"
-leptos-windowing = { path = "../.." }
+leptos-pagination = { path = "../.." }
 leptos_axum = { version = "0.8", optional = true }
 leptos_meta = { version = "0.8" }
 leptos_router = { version = "0.8" }

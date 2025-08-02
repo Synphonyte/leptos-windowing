@@ -1,8 +1,8 @@
 use leptos::prelude::*;
 use leptos_meta::*;
+use leptos_pagination::*;
 use leptos_router::components::{FlatRoutes, Route, Router, RoutingProgress};
 use leptos_router::path;
-use leptos_windowing::pagination::*;
 
 use std::sync::Arc;
 use std::time::Duration;

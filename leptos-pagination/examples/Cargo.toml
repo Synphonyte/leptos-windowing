@@ -1,19 +1,19 @@
 [package]
-name = "leptos-windowing-examples"
+name = "leptos-pagination-examples"
 version = "0.1.0"
 edition = "2024"
 
 [workspace]
-members = ["pagination_basic", "pagination_rest_api"]
-exclude = ["pagination_serverfn_sqlx"]
+members = ["basic", "rest_api"]
+exclude = ["serverfn_sqlx"]
 resolver = "3"
 
 [workspace.dependencies]
 console_error_panic_hook = "0.1"
 console_log = "1"
 leptos = "0.8"
-leptos-windowing = { path = ".." }
-leptos-windowing-examples = { path = "." }
+leptos-pagination = { path = ".." }
+leptos-pagination-examples = { path = "." }
 leptos-use = "0.16"
 log = "0.4"
 

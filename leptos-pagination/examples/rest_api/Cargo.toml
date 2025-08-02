@@ -1,5 +1,5 @@
 [package]
-name = "pagination_rest_api"
+name = "rest_api"
 version = "0.1.0"
 edition = "2024"
 
@@ -9,6 +9,6 @@ console_error_panic_hook.workspace = true
 console_log.workspace = true
 gloo-net = { version = "0.6", features = ["http"] }
 leptos = { workspace = true, features = ["csr"] }
-leptos-windowing.workspace = true
+leptos-pagination.workspace = true
 log.workspace = true
 serde = { version = "1", features = ["derive"] }

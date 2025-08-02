@@ -2,7 +2,7 @@ mod loader;
 mod models;
 
 use leptos::{either::EitherOf3, prelude::*};
-use leptos_windowing::pagination::{
+use leptos_pagination::{
     Loading, PaginatedFor, PaginationNext, PaginationPages, PaginationPrev, PaginationState,
 };
 use loader::{BreweryLoader, BreweryQuery, Column, SortDirection};

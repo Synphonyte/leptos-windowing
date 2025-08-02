@@ -1,11 +1,10 @@
 use std::ops::Range;
 
 use leptos::prelude::*;
-use leptos_windowing::{
-    pagination::{PaginatedFor, PaginationNext, PaginationPages, PaginationPrev, PaginationState},
-    MemoryLoader,
+use leptos_pagination::{
+    MemoryLoader, {PaginatedFor, PaginationNext, PaginationPages, PaginationPrev, PaginationState},
 };
-use leptos_windowing_examples::data::{Book, BOOKS};
+use leptos_pagination_examples::data::{Book, BOOKS};
 
 fn main() {
     _ = console_log::init_with_level(log::Level::Debug);

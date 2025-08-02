@@ -1,5 +1,5 @@
 use leptos::prelude::*;
-use leptos_windowing::ExactLoader;
+use leptos_pagination::ExactLoader;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "ssr")]
 use sqlx::QueryBuilder;
