@@ -7,7 +7,6 @@ edition = "2024"
 default-struct-builder = "0.5"
 leptos = "0.8"
 leptos-use = { version = "0.16", default-features = false, features = [
-    "math",
     "element",
 ] }
 reactive_stores = "0.2.3"
