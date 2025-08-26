@@ -40,7 +40,7 @@ where
     Q: Send + Sync + 'static,
     E: Send + Sync + Debug + 'static,
 {
-    #[cfg(feature = "ssr")]
+    #[cfg(not(feature = "ssr"))]
     {
         use leptos::task::spawn_local;
         use crate::cache::CacheStoreFields;
@@ -141,7 +141,7 @@ where
         }
     }
 
-    #[cfg(not(feature = "ssr"))]
+    #[cfg(feature = "ssr")]
     {
         let _ = range_to_load;
         let _ = range_to_display;
