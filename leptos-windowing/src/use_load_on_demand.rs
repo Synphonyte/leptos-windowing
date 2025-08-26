@@ -1,10 +1,10 @@
 use std::{fmt::Debug, ops::Range};
 
-use leptos::{prelude::*, reactive::spawn_local};
+use leptos::{prelude::*};
 
 use crate::{
     InternalLoader, ItemWindow,
-    cache::{Cache, CacheStoreFields},
+    cache::{Cache},
 };
 
 /// Load items on demand and cache them.
@@ -38,96 +38,123 @@ where
     T: Send + Sync + 'static,
     L: InternalLoader<M, Item = T, Query = Q, Error = E> + 'static,
     Q: Send + Sync + 'static,
-    E: Debug + 'static,
+    E: Send + Sync + Debug + 'static,
 {
-    let range_to_load = range_to_load.into();
-    let range_to_display = range_to_display.into();
+    #[cfg(feature = "ssr")]
+    {
+        use leptos::task::spawn_local;
+        use crate::cache::CacheStoreFields;
 
-    let cached_range_to_display = RwSignal::new(0..0);
+        let range_to_load = range_to_load.into();
+        let range_to_display = range_to_display.into();
 
-    let cache = Cache::new_store();
+        let cached_range_to_display = RwSignal::new(0..0);
 
-    let loader = Signal::stored_local(loader);
-    let query = query.into();
+        let cache = Cache::new_store();
 
-    let item_count_result = RwSignal::new_local(Ok(None));
+        let loader = Signal::stored_local(loader);
+        let query = query.into();
 
-    let set_item_count = move |count: Result<Option<usize>, E>| {
-        cache
-            .item_count()
-            .set(count.as_ref().ok().flatten().copied());
-        item_count_result.set(count);
-    };
+        let item_count_result = RwSignal::new(Ok(None));
 
-    let reload_counter = RwSignal::new(0_usize);
+        let set_item_count = move |count: Result<Option<usize>, E>| {
+            cache
+                .item_count()
+                .set(count.as_ref().ok().flatten().copied());
+            item_count_result.set(count);
+        };
 
-    // Clear cache
-    Effect::new(move || {
-        query.track();
-        Cache::clear(cache);
-        reload_counter.update(|counter| *counter = counter.wrapping_add(1));
-    });
+        let reload_counter = RwSignal::new(0_usize);
 
-    // Load item count
-    Effect::new(move || {
-        // we don't need to track the query here because it triggers cache invalidation which triggers reload_trigger
-        reload_counter.track();
-
-        spawn_local(async move {
-            let latest_reload_count = reload_counter.try_get_untracked();
-
-            let count = loader.read().item_count(&*query.read_untracked()).await;
-
-            // make sure the loaded count is still valid
-            if latest_reload_count == reload_counter.try_get_untracked() {
-                set_item_count(count);
-            }
+        // Clear cache
+        Effect::new(move || {
+            query.track();
+            Cache::clear(cache);
+            reload_counter.update(|counter| *counter = counter.wrapping_add(1));
         });
-    });
 
-    // Load items
-    Effect::new(move || {
-        // we don't need to track the query here because it triggers cache invalidation which triggers reload_trigger
-        reload_counter.track();
+        // Load item count
+        Effect::new(move || {
+            // we don't need to track the query here because it triggers cache invalidation which triggers reload_trigger
 
-        let missing_range = cache.read().missing_range(range_to_load.get());
-
-        if let Some(missing_range) = missing_range {
-            Cache::write_loading(cache, missing_range.clone());
+            reload_counter.track();
 
             spawn_local(async move {
                 let latest_reload_count = reload_counter.try_get_untracked();
 
-                let result = loader
-                    .read()
-                    .load_items(missing_range.clone(), &*query.read_untracked())
-                    .await;
+                let count = loader.read().item_count(&*query.read_untracked()).await;
 
-                // make sure the loaded data is still valid
+                // make sure the loaded count is still valid
                 if latest_reload_count == reload_counter.try_get_untracked() {
-                    if let Ok(loaded_items) = &result {
-                        if loaded_items.range.end < missing_range.end {
+                    set_item_count(count);
+                }
+            });
+        });
+
+        // Load items
+        Effect::new(move || {
+            // we don't need to track the query here because it triggers cache invalidation which triggers reload_trigger
+            reload_counter.track();
+
+            let missing_range = cache.read().missing_range(range_to_load.get());
+
+            if let Some(missing_range) = missing_range {
+                Cache::write_loading(cache, missing_range.clone());
+
+                spawn_local(async move {
+                    let latest_reload_count = reload_counter.try_get_untracked();
+
+                    let result = loader
+                        .read()
+                        .load_items(missing_range.clone(), &*query.read_untracked())
+                        .await;
+
+                    // make sure the loaded data is still valid
+                    if latest_reload_count == reload_counter.try_get_untracked() {
+                        if let Ok(loaded_items) = &result
+                            && loaded_items.range.end < missing_range.end
+                        {
                             set_item_count(Ok(Some(loaded_items.range.end)));
                         }
+
+                        Cache::write_loaded(
+                            cache,
+                            result.map_err(|e| format!("{e:?}")),
+                            missing_range,
+                        );
                     }
+                });
+            }
 
-                    Cache::write_loaded(cache, result.map_err(|e| format!("{e:?}")), missing_range);
-                }
+            // Make sure that the cache is filled and then update the display range
+            let Range { start, end } = range_to_display.get();
+            cached_range_to_display
+                .set(start..end.min(cache.item_count().get().unwrap_or(usize::MAX)));
+        });
 
-            });
+        UseLoadOnDemandResult {
+            item_count_result: item_count_result.into(),
+            item_window: ItemWindow {
+                cache,
+                range: cached_range_to_display.into(),
+            },
         }
+    }
 
-        // Make sure that the cache is filled and then update the display range
-        let Range { start, end } = range_to_display.get();
-        cached_range_to_display.set(start..end.min(cache.item_count().get().unwrap_or(usize::MAX)));
-    });
+    #[cfg(not(feature = "ssr"))]
+    {
+        let _ = range_to_load;
+        let _ = range_to_display;
+        let _ = loader;
+        let _ = query;
 
-    UseLoadOnDemandResult {
-        item_count_result: item_count_result.into(),
-        item_window: ItemWindow {
-            cache,
-            range: cached_range_to_display.into(),
-        },
+        UseLoadOnDemandResult {
+            item_count_result: Signal::stored(Ok(None)),
+            item_window: ItemWindow {
+                cache: Cache::new_store(),
+                range: Signal::stored(0..1),
+            },
+        }
     }
 }
 
@@ -135,8 +162,8 @@ where
 pub struct UseLoadOnDemandResult<T, E>
 where
     T: Send + Sync + 'static,
-    E: Debug + 'static,
+    E: Send + Sync + Debug + 'static,
 {
-    pub item_count_result: Signal<Result<Option<usize>, E>, LocalStorage>,
+    pub item_count_result: Signal<Result<Option<usize>, E>>,
     pub item_window: ItemWindow<T>,
 }

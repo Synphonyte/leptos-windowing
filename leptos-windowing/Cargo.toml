@@ -12,3 +12,6 @@ leptos-use = { version = "0.16", default-features = false, features = [
 reactive_stores = "0.2.3"
 serde = { version = "1.0.219", features = ["derive"] }
 web-sys = "0.3"
+
+[features]
+ssr = ["leptos-use/ssr", "leptos/ssr"]

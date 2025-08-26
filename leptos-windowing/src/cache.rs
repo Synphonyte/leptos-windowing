@@ -5,7 +5,7 @@ use std::{
     sync::Arc,
 };
 
-use crate::{item_state::ItemState, LoadedItems};
+use crate::{LoadedItems, item_state::ItemState};
 
 /// This is a cache for items used internally to track
 /// which items are already loaded, which are still loading and which are missing.
