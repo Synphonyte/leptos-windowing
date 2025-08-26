@@ -152,7 +152,7 @@ where
             item_count_result: Signal::stored(Ok(None)),
             item_window: ItemWindow {
                 cache: Cache::new_store(),
-                range: Signal::stored(0..1),
+                range: Signal::stored(0..0),
             },
         }
     }
