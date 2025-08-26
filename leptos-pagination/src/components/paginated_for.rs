@@ -32,8 +32,7 @@ pub struct Loading {
 /// # use std::ops::Range;
 /// #
 /// # use leptos::prelude::*;
-/// # use leptos_windowing::pagination::{Loading, PaginatedFor, PaginationState, PaginationPrev, PaginationNext};
-/// # use leptos_windowing::ExactLoader;
+/// # use leptos_pagination::{Loading, PaginatedFor, PaginationState, PaginationPrev, PaginationNext, ExactLoader};
 /// #
 /// pub struct Book {
 ///     title: String,
@@ -139,6 +138,7 @@ pub fn PaginatedFor<T, L, Q, CF, V, M>(
 where
     T: Send + Sync + 'static,
     L: InternalLoader<M, Item = T, Query = Q> + 'static,
+    L::Error: Send + Sync,
     Q: Send + Sync + 'static,
     CF: Fn((usize, Arc<T>)) -> V + Send + Clone + 'static,
     V: IntoView,

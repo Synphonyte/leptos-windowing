@@ -21,8 +21,7 @@ use crate::{PaginationState, PaginationStateStoreFields};
 /// ```
 /// # use std::ops::Range;
 /// #
-/// # use leptos_windowing::pagination::{use_pagination, use_pagination_controls, UsePaginationOptions, UsePaginationControlsOptions, PaginationState};
-/// # use leptos_windowing::MemoryLoader;
+/// # use leptos_pagination::{use_pagination, use_pagination_controls, UsePaginationOptions, UsePaginationControlsOptions, PaginationState, MemoryLoader};
 /// #
 /// let state = PaginationState::new_store();
 ///
@@ -78,6 +77,7 @@ pub fn use_pagination<T, L, Q, M>(
 where
     T: Send + Sync + 'static,
     L: InternalLoader<M, Item = T, Query = Q> + 'static,
+    L::Error: Send + Sync,
     Q: Send + Sync + 'static,
 {
     let UsePaginationOptions {
