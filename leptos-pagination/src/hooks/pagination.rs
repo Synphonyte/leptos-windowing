@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use default_struct_builder::DefaultBuilder;
 use leptos::prelude::*;
 use leptos_windowing::{
-    use_load_on_demand::{use_load_on_demand, UseLoadOnDemandResult},
+    hook::{use_load_on_demand, UseLoadOnDemandResult},
     InternalLoader, ItemWindow,
 };
 use reactive_stores::Store;

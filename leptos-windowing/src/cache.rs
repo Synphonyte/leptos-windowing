@@ -5,7 +5,7 @@ use std::{
     sync::Arc,
 };
 
-use crate::{LoadedItems, item_state::ItemState};
+use crate::{item_state::ItemState, LoadedItems};
 
 /// This is a cache for items used internally to track
 /// which items are already loaded, which are still loading and which are missing.
@@ -129,6 +129,10 @@ impl<T: Send + Sync + 'static> Cache<T> {
     pub fn missing_range(&self, range_to_load: Range<usize>) -> Option<Range<usize>> {
         let do_load_predicate = |item: &ItemState<T>| matches!(item, &ItemState::Placeholder);
 
+        if range_to_load.end <= range_to_load.start {
+            return None;
+        }
+
         if range_to_load.start >= self.items.len() {
             return Some(range_to_load);
         }
@@ -151,6 +155,10 @@ impl<T: Send + Sync + 'static> Cache<T> {
 
         if let Some(item_count) = self.item_count {
             end = end.min(item_count);
+        }
+
+        if end <= start {
+            return None;
         }
 
         Some(

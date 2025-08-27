@@ -17,9 +17,9 @@
 //! Please refer to the documentation and the examples to see how to implement these traits.
 
 pub mod cache;
+pub mod hook;
 pub mod item_state;
 mod loaders;
-pub mod use_load_on_demand;
 mod window;
 
 pub use loaders::*;
