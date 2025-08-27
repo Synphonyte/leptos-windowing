@@ -4,6 +4,54 @@
 //! It provides efficient loading, caching and displaying of large data. At the same time it
 //! is very easy to use even for small datasets.
 //!
+//! ## Usage
+//!
+//! ```
+//! # use leptos::prelude::*;
+//! # use leptos_pagination::*;
+//! # use std::ops::Range;
+//! #
+//! pub struct Book {
+//!     title: String,
+//! }
+//!
+//! // Implement one of the loader traits for this struct (not shown here, see below).
+//! pub struct BookLoader;
+//!
+//! # // Dummy implementation for demonstration purposes
+//! # impl MemoryLoader for BookLoader {
+//! #     type Item = Book;
+//! #     type Query = ();
+//! #     fn load_items(&self, range: Range<usize>, _query: &()) -> Vec<Self::Item> {
+//! #         vec![]
+//! #     }
+//! #     fn item_count(&self, _query: &()) -> usize {
+//! #         0
+//! #     }
+//! # }
+//! #
+//! # #[component]
+//! # pub fn App() -> impl IntoView {
+//! let state = PaginationState::new_store();
+//!
+//! view! {
+//!     <ul>
+//!         <PaginatedFor loader=BookLoader query=() state item_count_per_page=10 let:idx_book>
+//!             // idx_book is a tuple containing the index and the book data
+//!             <li>{idx_book.1.title.clone()}</li>
+//!         </PaginatedFor>
+//!     </ul>
+//!
+//!     <PaginationPrev state>"Prev"</PaginationPrev>
+//!     <PaginationNext state>"Next"</PaginationNext>
+//!
+//!     <nav>
+//!         <PaginationPages state />
+//!     </nav>
+//! }
+//! # }
+//! ```
+//!
 //! ## Loading data
 //!
 //! Loading data is done through implementing one of the various `Loader` traits. Depending on your use case

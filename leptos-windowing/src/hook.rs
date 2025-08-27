@@ -1,11 +1,8 @@
 use std::{fmt::Debug, ops::Range};
 
-use leptos::{prelude::*};
+use leptos::prelude::*;
 
-use crate::{
-    InternalLoader, ItemWindow,
-    cache::{Cache},
-};
+use crate::{InternalLoader, ItemWindow, cache::Cache};
 
 /// Load items on demand and cache them.
 ///
@@ -42,8 +39,8 @@ where
 {
     #[cfg(not(feature = "ssr"))]
     {
-        use leptos::task::spawn_local;
         use crate::cache::CacheStoreFields;
+        use leptos::task::spawn_local;
 
         let range_to_load = range_to_load.into();
         let range_to_display = range_to_display.into();

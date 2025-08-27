@@ -1,4 +1,4 @@
-//! Base Crate for Virtualization and pagination for Leptos.
+//! Base crate for virtualization and pagination for Leptos.
 //!
 //! This crate contains common code for the crates leptos-pagination and leptos-virtualization.
 //! You probably want don't want to use this crate directly.

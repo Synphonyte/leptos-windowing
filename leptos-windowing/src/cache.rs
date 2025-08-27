@@ -39,6 +39,10 @@ impl<T: Send + Sync + 'static> Cache<T> {
         self.items.len()
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.items.is_empty()
+    }
+
     #[inline]
     /// Resize the cache to the specified length.
     pub fn resize(&mut self, len: usize) {
@@ -86,10 +90,10 @@ impl<T: Send + Sync + 'static> Cache<T> {
                 #[cfg(debug_assertions)]
                 let _z = leptos::reactive::diagnostics::SpecialNonReactiveZone::enter();
 
-                if range.end > this_store.items().read_untracked().len() {
-                    if let Some(mut writer) = this_store.items().try_write() {
-                        writer.resize(range.end, ItemState::Placeholder);
-                    }
+                if range.end > this_store.items().read_untracked().len()
+                    && let Some(mut writer) = this_store.items().try_write()
+                {
+                    writer.resize(range.end, ItemState::Placeholder);
                 }
 
                 for (self_row, loaded_row) in this_store

@@ -16,7 +16,7 @@ impl<T: Send + Sync + 'static> Clone for ItemState<T> {
         match self {
             ItemState::Placeholder => ItemState::Placeholder,
             ItemState::Loading => ItemState::Loading,
-            ItemState::Loaded(item) => ItemState::Loaded(Arc::clone(&item)),
+            ItemState::Loaded(item) => ItemState::Loaded(Arc::clone(item)),
             ItemState::Error(error) => ItemState::Error(error.clone()),
         }
     }

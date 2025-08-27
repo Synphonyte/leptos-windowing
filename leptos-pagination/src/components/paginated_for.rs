@@ -2,11 +2,11 @@ use std::{marker::PhantomData, sync::Arc};
 
 use leptos::prelude::*;
 use leptos_windowing::{
-    cache::CacheStoreFields, item_state::ItemState, InternalLoader, ItemWindow,
+    InternalLoader, ItemWindow, cache::CacheStoreFields, item_state::ItemState,
 };
 use reactive_stores::{Store, StoreFieldIterator};
 
-use crate::{use_pagination, PaginationState, UsePaginationOptions};
+use crate::{PaginationState, UsePaginationOptions, use_pagination};
 
 /// Slot that is rendered when an error occurs.
 #[derive(Clone)]
