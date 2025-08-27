@@ -56,6 +56,11 @@ jobs:
         with:
           key: ${{ needs.determine-crate.outputs.crate }}
 
+      - name: Check if the README is up to date.
+        run: |
+          cargo install cargo-rdme
+          cargo rdme --check
+        working-directory: ${{ needs.determine-crate.outputs.crate }}
       - name: Check formatting
         run: cargo fmt --check
         working-directory: ${{ needs.determine-crate.outputs.crate }}
@@ -122,3 +127,4 @@ jobs:
           -F RELEASE.md
           -t "${{ needs.determine-crate.outputs.crate }} ${GITHUB_REF#refs/*/}"
           ${GITHUB_REF#refs/*/}
+        working-directory: ${{ needs.determine-crate.outputs.crate }}
