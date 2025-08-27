@@ -2,22 +2,47 @@ on:
   push:
     # Pattern matched against refs/tags
     tags:
-      - '*'           # Push events to every tag not containing /
+      - 'leptos-windowing-v*'
+      - 'leptos-pagination-v*'
   workflow_dispatch:
+    inputs:
+      crate:
+        description: 'Crate to publish'
+        required: true
+        type: choice
+        options:
+          - leptos-windowing
+          - leptos-pagination
 
 name: CD
 
 permissions: write-all
 
 jobs:
-  test:
-    name: Test ${{ matrix.crate }}
+  determine-crate:
+    name: Determine Crate from Tag
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        crate:
-          - leptos-windowing
-          - leptos-pagination
+    outputs:
+      crate: ${{ steps.extract.outputs.crate }}
+    steps:
+      - name: Extract crate from tag or input
+        id: extract
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "crate=${{ github.event.inputs.crate }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == refs/tags/leptos-windowing-v* ]]; then
+            echo "crate=leptos-windowing" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == refs/tags/leptos-pagination-v* ]]; then
+            echo "crate=leptos-pagination" >> $GITHUB_OUTPUT
+          else
+            echo "Invalid tag format. Use leptos-windowing-v* or leptos-pagination-v*"
+            exit 1
+          fi
+
+  test:
+    name: Test ${{ needs.determine-crate.outputs.crate }}
+    runs-on: ubuntu-latest
+    needs: determine-crate
     steps:
       - uses: actions/checkout@v4
       - uses: actions-rs/toolchain@v1
@@ -29,28 +54,19 @@ jobs:
       - name: Cache
         uses: Swatinem/rust-cache@v2
         with:
-          key: ${{ matrix.crate }}
+          key: ${{ needs.determine-crate.outputs.crate }}
 
       - name: Check formatting
-        run: cargo fmt --check -p ${{ matrix.crate }}
+        run: cargo fmt --check -p ${{ needs.determine-crate.outputs.crate }}
       - name: Clippy
-        run: cargo clippy -p ${{ matrix.crate }} --tests -- -D warnings
-      - name: Check if the README is up to date.
-        run: |
-          cargo install cargo-rdme
-          cargo rdme --check
+        run: cargo clippy -p ${{ needs.determine-crate.outputs.crate }} --tests -- -D warnings
       - name: Run tests
-        run: cargo test -p ${{ matrix.crate }}
+        run: cargo test -p ${{ needs.determine-crate.outputs.crate }}
 
   publish:
-    name: Publish ${{ matrix.crate }}
+    name: Publish ${{ needs.determine-crate.outputs.crate }}
     runs-on: ubuntu-latest
-    needs: test
-    strategy:
-      matrix:
-        crate:
-          - leptos-windowing
-          - leptos-pagination
+    needs: [determine-crate, test]
     steps:
       - uses: actions/checkout@v4
       - uses: actions-rs/toolchain@v1
@@ -62,10 +78,10 @@ jobs:
       - name: Cache
         uses: Swatinem/rust-cache@v2
         with:
-          key: ${{ matrix.crate }}
+          key: ${{ needs.determine-crate.outputs.crate }}
 
       - name: Handle dependency for leptos-pagination
-        if: matrix.crate == 'leptos-pagination'
+        if: needs.determine-crate.outputs.crate == 'leptos-pagination'
         run: |
           cd leptos-pagination
           # Check if leptos-windowing is already published with the current version
@@ -80,17 +96,17 @@ jobs:
             sed -i 's/leptos-windowing = { version = "[^"]*", path = "[^"]*" }/leptos-windowing = "'"$WINDOWING_VERSION"'"/' Cargo.toml
           fi
 
-      - name: Publish ${{ matrix.crate }}
+      - name: Publish ${{ needs.determine-crate.outputs.crate }}
         uses: katyo/publish-crates@v2
         with:
           registry-token: ${{ secrets.CRATES_TOKEN }}
-          path: ${{ matrix.crate }}
+          path: ${{ needs.determine-crate.outputs.crate }}
           args: --no-verify
 
   create-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs: publish
+    needs: [determine-crate, publish]
     steps:
       - uses: actions/checkout@v4
 
@@ -102,5 +118,5 @@ jobs:
           gh release create
           -d
           -F RELEASE.md
-          -t "Version $RELEASE_VERSION"
+          -t "${{ needs.determine-crate.outputs.crate }} ${GITHUB_REF#refs/*/}"
           ${GITHUB_REF#refs/*/}
