@@ -109,24 +109,3 @@ jobs:
         working-directory: ${{ needs.determine-crate.outputs.crate }}
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_TOKEN }}
-
-  create-release:
-    name: Create GitHub Release
-    runs-on: ubuntu-latest
-    needs: [determine-crate, publish]
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: CSchoel/release-notes-from-changelog@v1
-        with:
-          working-directory: ${{ needs.determine-crate.outputs.crate }}
-
-      - name: Create Release using GitHub CLI
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: >
-          gh release create
-          -d
-          -F RELEASE.md
-          -t "${{ needs.determine-crate.outputs.crate }} ${GITHUB_REF#refs/*/}"
-          ${GITHUB_REF#refs/*/}
