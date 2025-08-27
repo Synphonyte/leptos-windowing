@@ -118,6 +118,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: CSchoel/release-notes-from-changelog@v1
+        with:
+          working-directory: ${{ needs.determine-crate.outputs.crate }}
+
       - name: Create Release using GitHub CLI
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -127,4 +130,3 @@ jobs:
           -F RELEASE.md
           -t "${{ needs.determine-crate.outputs.crate }} ${GITHUB_REF#refs/*/}"
           ${GITHUB_REF#refs/*/}
-        working-directory: ${{ needs.determine-crate.outputs.crate }}
