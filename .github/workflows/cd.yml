@@ -19,7 +19,7 @@ jobs:
           - leptos-windowing
           - leptos-pagination
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
@@ -52,7 +52,7 @@ jobs:
           - leptos-windowing
           - leptos-pagination
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
@@ -92,7 +92,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: publish
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: CSchoel/release-notes-from-changelog@v1
       - name: Create Release using GitHub CLI
