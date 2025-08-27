@@ -57,11 +57,14 @@ jobs:
           key: ${{ needs.determine-crate.outputs.crate }}
 
       - name: Check formatting
-        run: cargo fmt --check -p ${{ needs.determine-crate.outputs.crate }}
+        run: cargo fmt --check
+        working-directory: ${{ needs.determine-crate.outputs.crate }}
       - name: Clippy
-        run: cargo clippy -p ${{ needs.determine-crate.outputs.crate }} --tests -- -D warnings
+        run: cargo clippy --tests -- -D warnings
+        working-directory: ${{ needs.determine-crate.outputs.crate }}
       - name: Run tests
-        run: cargo test -p ${{ needs.determine-crate.outputs.crate }}
+        run: cargo test
+        working-directory: ${{ needs.determine-crate.outputs.crate }}
 
   publish:
     name: Publish ${{ needs.determine-crate.outputs.crate }}
@@ -83,7 +86,6 @@ jobs:
       - name: Handle dependency for leptos-pagination
         if: needs.determine-crate.outputs.crate == 'leptos-pagination'
         run: |
-          cd leptos-pagination
           # Check if leptos-windowing is already published with the current version
           WINDOWING_VERSION=$(grep 'version = "' ../leptos-windowing/Cargo.toml | head -1 | sed 's/.*version = "\(.*\)".*/\1/')
           echo "Checking if leptos-windowing $WINDOWING_VERSION is available on crates.io..."
@@ -95,13 +97,13 @@ jobs:
             echo "leptos-windowing $WINDOWING_VERSION found on crates.io. Updating dependency."
             sed -i 's/leptos-windowing = { version = "[^"]*", path = "[^"]*" }/leptos-windowing = "'"$WINDOWING_VERSION"'"/' Cargo.toml
           fi
+        working-directory: ${{ needs.determine-crate.outputs.crate }}
 
       - name: Publish ${{ needs.determine-crate.outputs.crate }}
-        uses: katyo/publish-crates@v2
-        with:
-          registry-token: ${{ secrets.CRATES_TOKEN }}
-          path: ${{ needs.determine-crate.outputs.crate }}
-          args: --no-verify
+        run: cargo publish --no-verify
+        working-directory: ${{ needs.determine-crate.outputs.crate }}
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_TOKEN }}
 
   create-release:
     name: Create GitHub Release
