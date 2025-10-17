@@ -39,17 +39,17 @@ where
 {
     #[cfg(not(feature = "ssr"))]
     {
-        use crate::cache::CacheStoreFields;
         use leptos::task::spawn_local;
+        use leptos_use::{WatchPausableReturn, watch_pausable};
 
         let range_to_load = range_to_load.into();
         let range_to_display = range_to_display.into();
 
         let cached_range_to_display = RwSignal::new(0..0);
 
-        let cache = Cache::new_store();
+        let mut cache = Cache::new();
 
-        let loader = Signal::stored_local(loader);
+        let loader = StoredValue::new_local(loader);
         let query = query.into();
 
         let item_count_result = RwSignal::new(Ok(None));
@@ -66,7 +66,7 @@ where
         // Clear cache
         Effect::new(move || {
             query.track();
-            Cache::clear(cache);
+            cache.clear();
             reload_counter.update(|counter| *counter = counter.wrapping_add(1));
         });
 
@@ -79,7 +79,10 @@ where
             spawn_local(async move {
                 let latest_reload_count = reload_counter.try_get_untracked();
 
-                let count = loader.read().item_count(&*query.read_untracked()).await;
+                let count = loader
+                    .read_value()
+                    .item_count(&*query.read_untracked())
+                    .await;
 
                 // make sure the loaded count is still valid
                 if latest_reload_count == reload_counter.try_get_untracked() {
@@ -89,45 +92,55 @@ where
         });
 
         // Load items
-        Effect::new(move || {
-            // we don't need to track the query here because it triggers cache invalidation which triggers reload_trigger
-            reload_counter.track();
+        let WatchPausableReturn {
+            pause,
+            resume,
+            is_active,
+            ..
+        } = watch_pausable(
+            move || {
+                // we don't need to track the query here because it triggers cache invalidation which triggers reload_trigger
+                reload_counter.track();
 
-            let missing_range = cache.read().missing_range(range_to_load.get());
+                cache.track();
+            },
+            move |_, _, _| {
+                let missing_range = cache.missing_range(range_to_load.get());
 
-            if let Some(missing_range) = missing_range {
-                Cache::write_loading(cache, missing_range.clone());
+                if let Some(missing_range) = missing_range {
+                    cache.write_loading(missing_range.clone());
 
-                spawn_local(async move {
-                    let latest_reload_count = reload_counter.try_get_untracked();
+                    spawn_local(async move {
+                        let latest_reload_count = reload_counter.try_get_untracked();
 
-                    let result = loader
-                        .read()
-                        .load_items(missing_range.clone(), &*query.read_untracked())
-                        .await;
+                        let result = loader
+                            .read_value()
+                            .load_items(missing_range.clone(), &*query.read_untracked())
+                            .await;
 
-                    // make sure the loaded data is still valid
-                    if latest_reload_count == reload_counter.try_get_untracked() {
-                        if let Ok(loaded_items) = &result
-                            && loaded_items.range.end < missing_range.end
-                        {
-                            set_item_count(Ok(Some(loaded_items.range.end)));
+                        // make sure the loaded data is still valid
+                        if latest_reload_count == reload_counter.try_get_untracked() {
+                            if let Ok(loaded_items) = &result
+                                && loaded_items.range.end < missing_range.end
+                            {
+                                set_item_count(Ok(Some(loaded_items.range.end)));
+                            }
+
+                            cache.write_loaded(result.map_err(|e| format!("{e:?}")), missing_range);
                         }
+                    });
+                }
 
-                        Cache::write_loaded(
-                            cache,
-                            result.map_err(|e| format!("{e:?}")),
-                            missing_range,
-                        );
-                    }
-                });
-            }
+                // Make sure that the cache is filled and then update the display range
+                let Range { start, end } = range_to_display.get();
+                cached_range_to_display
+                    .set(start..end.min(cache.item_count().get().unwrap_or(usize::MAX)));
+            },
+        );
 
-            // Make sure that the cache is filled and then update the display range
-            let Range { start, end } = range_to_display.get();
-            cached_range_to_display
-                .set(start..end.min(cache.item_count().get().unwrap_or(usize::MAX)));
-        });
+        cache.pause_reactive_loading = pause.into();
+        cache.resume_reactive_loading = resume.into();
+        cache.is_reactive_loading_active = is_active;
 
         UseLoadOnDemandResult {
             item_count_result: item_count_result.into(),
@@ -148,7 +161,7 @@ where
         UseLoadOnDemandResult {
             item_count_result: Signal::stored(Ok(None)),
             item_window: ItemWindow {
-                cache: Cache::new_store(),
+                cache: Cache::new(),
                 range: Signal::stored(0..0),
             },
         }
@@ -163,4 +176,21 @@ where
 {
     pub item_count_result: Signal<Result<Option<usize>, E>>,
     pub item_window: ItemWindow<T>,
+}
+
+impl<T, E> Clone for UseLoadOnDemandResult<T, E>
+where
+    T: Send + Sync + 'static,
+    E: Send + Sync + Debug + 'static,
+{
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+
+impl<T, E> Copy for UseLoadOnDemandResult<T, E>
+where
+    T: Send + Sync + 'static,
+    E: Send + Sync + Debug + 'static,
+{
 }

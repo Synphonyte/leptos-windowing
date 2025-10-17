@@ -6,6 +6,9 @@ edition = "2021"
 [lib]
 crate-type = ["cdylib", "rlib"]
 
+# To unconfuse Cargo that this doesn't belong in any workspace
+[workspace]
+
 [dependencies]
 axum = { version = "0.8", optional = true }
 console_error_panic_hook = "0.1"
@@ -18,30 +21,30 @@ leptos_meta = { version = "0.8" }
 leptos_router = { version = "0.8" }
 serde = { version = "1", features = ["derive"] }
 sqlx = { version = "0.8", optional = true, features = [
-    "sqlite",
-    "runtime-tokio-rustls",
+  "sqlite",
+  "runtime-tokio-rustls",
 ] }
 thiserror = "2"
 tokio = { version = "1", features = ["rt-multi-thread"], optional = true }
 tower = { version = "0.4", optional = true }
 tower-http = { version = "0.5", features = ["fs"], optional = true }
 tracing = { version = "0.1", optional = true }
-wasm-bindgen = "0.2.99"
+wasm-bindgen = "=0.2.104"
 
 [features]
 hydrate = ["leptos/hydrate"]
 ssr = [
-    "dep:axum",
-    "dep:tokio",
-    "dep:tower",
-    "dep:tower-http",
-    "dep:leptos_axum",
-    "dep:sqlx",
-    "leptos/ssr",
-    "leptos_meta/ssr",
-    "leptos_router/ssr",
-    "leptos-use/ssr",
-    "dep:tracing",
+  "dep:axum",
+  "dep:tokio",
+  "dep:tower",
+  "dep:tower-http",
+  "dep:leptos_axum",
+  "dep:sqlx",
+  "leptos/ssr",
+  "leptos_meta/ssr",
+  "leptos_router/ssr",
+  "leptos-use/ssr",
+  "dep:tracing",
 ]
 
 # Defines a size-optimized profile for the WASM bundle in release mode

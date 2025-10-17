@@ -1,0 +1,9 @@
+[workspace]
+members = [
+    "leptos-pagination",
+    "leptos-windowing",
+]
+resolver = "3"
+
+[workspace.dependencies]
+leptos-windowing = { version = "0.1.1", path = "leptos-windowing" }

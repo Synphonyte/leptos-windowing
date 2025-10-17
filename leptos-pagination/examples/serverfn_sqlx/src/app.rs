@@ -40,7 +40,7 @@ fn HomePage() -> impl IntoView {
 
     view! {
         <div class="flex flex-col bg-white h-[100vh]">
-            <div class="py-2 px-5 border-b bg-slate-100">
+            <div class="py-2 px-5 border-b border-gray-300 bg-slate-100">
                 <label class="block relative">
                     <span class="flex absolute inset-y-0 left-0 items-center pl-3">
                         <svg
@@ -65,15 +65,15 @@ fn HomePage() -> impl IntoView {
                 </label>
             </div>
 
-            <div class="grid overflow-auto grid-cols-4 gap-4 min-h-0 text-sm text-left text-gray-500 dark:text-gray-400 grow">
+            <div class="grid grid-cols-4 gap-4 p-5 min-h-0 text-sm text-left text-gray-500 dark:text-gray-400 grow">
                 <PaginatedFor
                     loader=CustomerLoader
                     state
                     query
                     item_count_per_page=12
-                    let:idx_customer
+                    let:customer_item
                 >
-                    <CustomerCard customer=idx_customer.1.clone() />
+                    <CustomerCard customer_item />
 
                     <Loading slot>
                         // Skeleton loading
@@ -132,10 +132,18 @@ pub fn CustomerCardSkeleton() -> impl IntoView {
 }
 
 #[component]
-pub fn CustomerCard(customer: Arc<Customer>) -> impl IntoView {
+pub fn CustomerCard(customer_item: WindowItem<Customer>) -> impl IntoView {
+    let customer = Arc::clone(&customer_item.data);
+
+    let handle_delete = move |_| {
+        customer_item.remove();
+    };
+
     view! {
-        <article class="overflow-hidden w-full max-w-sm bg-white rounded-lg shadow-lg dark:bg-gray-700">
-            <div class="flex flex-col gap-1 px-4 mt-4">
+        <article class="relative overflow-hidden w-full max-w-sm min-h-0 bg-white rounded-lg shadow-lg dark:bg-gray-700">
+            <DeleteButton on:click=handle_delete />
+
+            <div class="flex flex-col gap-1 px-4 mt-4 mb-4">
                 <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-50">
                     {customer.first_name.clone()} " " {customer.last_name.clone()}
                 </h2>
@@ -150,5 +158,28 @@ pub fn CustomerCard(customer: Arc<Customer>) -> impl IntoView {
                 </span>
             </div>
         </article>
+    }
+}
+
+#[component]
+pub fn DeleteButton() -> impl IntoView {
+    view! {
+        <button
+            class="p-2 text-grey-500 opacity-50 hover:opacity-100 absolute top-0 right-0"
+            title="Delete customer"
+        >
+            <svg
+                class="block size-6"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+                xmlns="http://www.w3.org/2000/svg"
+            >
+                <path
+                    fill-rule="evenodd"
+                    d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                    clip-rule="evenodd"
+                ></path>
+            </svg>
+        </button>
     }
 }

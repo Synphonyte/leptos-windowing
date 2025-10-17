@@ -2,11 +2,11 @@ use std::{marker::PhantomData, sync::Arc};
 
 use leptos::prelude::*;
 use leptos_windowing::{
-    InternalLoader, ItemWindow, cache::CacheStoreFields, item_state::ItemState,
+    InternalLoader, ItemWindow, WindowItem, cache::CacheController, item_state::ItemState,
 };
 use reactive_stores::{Store, StoreFieldIterator};
 
-use crate::{PaginationState, UsePaginationOptions, use_pagination};
+use crate::{PaginationState, PaginationStateStoreFields, UsePaginationOptions, use_pagination};
 
 /// Slot that is rendered when an error occurs.
 #[derive(Clone)]
@@ -19,6 +19,13 @@ pub struct LoadError {
 #[derive(Clone)]
 #[slot]
 pub struct Loading {
+    children: ChildrenFn,
+}
+
+/// Slot that is rendered when the data hass been loaded but is empty.
+#[derive(Clone)]
+#[slot]
+pub struct Empty {
     children: ChildrenFn,
 }
 
@@ -125,9 +132,17 @@ pub fn PaginatedFor<T, L, Q, CF, V, M>(
     #[prop(optional)]
     loading: Option<Loading>,
 
+    /// Slot that is rendered instead of `children` when the data has been loaded but is empty.
+    #[prop(optional)]
+    empty: Option<Empty>,
+
     /// Slot that is rendered instead of `children` when an error occurs.
     #[prop(optional)]
     load_error: Option<LoadError>,
+
+    /// You can provide this to implement mutable access to the cache for editing/inserting elements.
+    #[prop(optional)]
+    cache_controller: CacheController<T>,
 
     /// The normal children are rendered when an item is loaded.
     /// This would be a normal `<li>` or `<tr>` element for example.
@@ -140,7 +155,7 @@ where
     L: InternalLoader<M, Item = T, Query = Q> + 'static,
     L::Error: Send + Sync,
     Q: Send + Sync + 'static,
-    CF: Fn((usize, Arc<T>)) -> V + Send + Clone + 'static,
+    CF: Fn(WindowItem<T>) -> V + Send + Clone + 'static,
     V: IntoView,
 {
     let window: ItemWindow<T> = use_pagination(
@@ -151,7 +166,21 @@ where
         UsePaginationOptions::default().overscan_page_count(overscan_page_count),
     );
 
+    cache_controller.init_with_item_window(window);
+
+    let empty_view = move || {
+        if let Some(count) = state.page_count().get()
+            && count == 0
+        {
+            empty.clone().map(|e| (e.children)())
+        } else {
+            None
+        }
+    };
+
     view! {
+        {empty_view}
+
         <For each=move || window.range.get() key=|idx| *idx let:index>
             {
                 let children = children.clone();
@@ -159,7 +188,9 @@ where
                 let load_error = load_error.clone();
                 move || match &*window.cache.items().at_unkeyed(index).read() {
                     ItemState::Loaded(item) => {
-                        children.clone()((index, Arc::clone(item))).into_any()
+                        children
+                            .clone()(WindowItem::new(index, Arc::clone(item), &window))
+                            .into_any()
                     }
                     ItemState::Error(error) => {
                         load_error
