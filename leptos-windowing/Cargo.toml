@@ -14,12 +14,12 @@ repository = "https://github.com/Synphonyte/leptos-windowing"
 [dependencies]
 default-struct-builder = "0.5"
 leptos = "0.8"
-leptos-use = { version = "0.16", default-features = false, features = [
+leptos-use = { version = "0.17", default-features = false, features = [
   "element",
   "watch_pausable",
 ] }
-reactive_stores = "0.2.3"
-serde = { version = "1.0.219", features = ["derive"] }
+reactive_stores = "0.3"
+serde = { version = "1", features = ["derive"] }
 web-sys = "0.3"
 
 [features]
