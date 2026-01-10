@@ -38,7 +38,7 @@
 //!     <ul>
 //!         <PaginatedFor loader=BookLoader query=() state item_count_per_page=10 let:idx_book>
 //!             // idx_book is a tuple containing the index and the book data
-//!             <li>{idx_book.1.title.clone()}</li>
+//!             <li>{idx_book.data.title.clone()}</li>
 //!         </PaginatedFor>
 //!     </ul>
 //!

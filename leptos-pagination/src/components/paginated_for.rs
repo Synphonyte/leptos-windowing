@@ -60,9 +60,9 @@ pub struct Empty {
 ///             let:idx_book
 ///         >
 ///             // Shown when the data has finished loading.
-///             <li class={if idx_book.0 % 2 == 0 { "even" } else { "odd" }}>
-///                 <h3>{idx_book.1.title.clone()}</h3>
-///                 <p>{idx_book.1.author.clone()}</p>
+///             <li class={if idx_book.index % 2 == 0 { "even" } else { "odd" }}>
+///                 <h3>{idx_book.data.title.clone()}</h3>
+///                 <p>{idx_book.data.author.clone()}</p>
 ///             </li>
 ///
 ///             // Shown while the data is loading.
