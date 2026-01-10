@@ -4,7 +4,7 @@ use leptos::prelude::*;
 use leptos_pagination::{
     MemoryLoader, {PaginatedFor, PaginationNext, PaginationPages, PaginationPrev, PaginationState},
 };
-use leptos_pagination_examples::data::{Book, BOOKS};
+use leptos_pagination_examples::data::{BOOKS, Book};
 
 fn main() {
     _ = console_log::init_with_level(log::Level::Debug);
@@ -21,8 +21,8 @@ pub fn App() -> impl IntoView {
         <ul class="m-10 text-sm bg-white rounded-md border border-gray-300 dark:bg-gray-800 dark:border-gray-700 overflow-clip">
             <PaginatedFor loader=BookLoader query=() state item_count_per_page=5 let:idx_book>
                 <li class="p-2 bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-                    <h3 class="font-bold text-gray-900 dark:text-white">{idx_book.1.title}</h3>
-                    <p class="text-gray-500 dark:text-gray-400">{idx_book.1.author}</p>
+                    <h3 class="font-bold text-gray-900 dark:text-white">{idx_book.data.title}</h3>
+                    <p class="text-gray-500 dark:text-gray-400">{idx_book.data.author}</p>
                 </li>
             </PaginatedFor>
         </ul>

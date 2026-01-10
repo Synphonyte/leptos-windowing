@@ -6,4 +6,4 @@ members = [
 resolver = "3"
 
 [workspace.dependencies]
-leptos-windowing = { version = "0.1.1", path = "leptos-windowing" }
+leptos-windowing = { version = "0.2", path = "leptos-windowing" }
